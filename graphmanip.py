@@ -62,6 +62,7 @@ class Edge:
         return max(self.u.y, self.v.y)
 
     def dist(self, x, y):
+        # TODO verify this
         px = x - self.u.x
         py = y - self.u.y
         p_dist = math.sqrt(px ** 2 + py ** 2)
