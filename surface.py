@@ -86,7 +86,6 @@ class Surface:
         self.context.paint()
         self.context.restore()
         for o in self.drawables:
-            print(f'Draw {o}')
             self.context.save()
             o.render(self.context)
             self.context.restore()
