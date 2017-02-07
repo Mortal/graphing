@@ -5,6 +5,7 @@ import tkinter
 import PIL.Image
 import PIL.ImageTk
 import cairo
+from priolist import PriorityList
 
 
 def save_restore(fn):
@@ -18,28 +19,24 @@ def save_restore(fn):
     return wrapper
 
 
-def draw_history(fn):
-    fn = save_restore(fn)
-
-    @wraps(fn)
-    def wrapper(self, *args, **kwargs):
-        self.draw_history.append(partial(fn, self, *args, **kwargs))
-        self.draw_history[-1]()
-        self.update()
-
-    return wrapper
-
-
 class Surface:
     def __init__(self, parent, w, h):
         self.surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
         self.context = cairo.Context(self.surface)
 
         self._image_ref = PIL.ImageTk.PhotoImage('RGBA', (w, h))
-        self.draw_history = []
+        self.drawables = PriorityList()
         self.redraw()
 
         self.label = tkinter.Label(parent, image=self._image_ref)
+
+    def add(self, drawable):
+        priority = drawable.layer
+        self.drawables.add(priority, drawable)
+
+    def remove(self, drawable):
+        priority = drawable.layer
+        self.drawables.remove(priority, drawable)
 
     def pack(self, *args, **kwargs):
         self.label.pack(*args, **kwargs)
@@ -76,7 +73,7 @@ class Surface:
         self.pack(expand=True, fill="both")
         self.redraw()
 
-    def update(self):
+    def _update(self):
         w, h = self.surface.get_width(), self.surface.get_height()
         surface_data = self.surface.get_data().obj
         img = PIL.Image.frombytes("RGBA", (w, h), surface_data,
@@ -88,11 +85,14 @@ class Surface:
         self.context.set_source_rgba(1, 1, 1, 1)
         self.context.paint()
         self.context.restore()
-        for call in self.draw_history:
-            call()
-        self.update()
+        for o in self.drawables:
+            print(f'Draw {o}')
+            self.context.save()
+            o.render(self.context)
+            self.context.restore()
+        self._update()
 
-    @draw_history
+    @save_restore
     def circle_device_radius(self, x, y, device_radius):
         x, y = self.context.user_to_device(x, y)
         self.context.identity_matrix()
@@ -109,7 +109,7 @@ class Surface:
         self.context.set_source_rgba(1, 0, 0, 0.8)
         self.context.fill()
 
-    @draw_history
+    @save_restore
     def poly(self, *points):
         self._poly(*points)
 
@@ -118,6 +118,9 @@ class Surface:
         self.context.scale(f, f)
         self.context.translate(-x, -y)
         self.redraw()
+
+    def current_scale(self):
+        return self.context.user_to_device_distance(1, 0)[0]
 
     def device_to_user(self, x, y):
         return self.context.device_to_user(x, y)
