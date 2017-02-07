@@ -26,6 +26,17 @@ class Node:
         context.set_line_width(max(context.device_to_user_distance(1, 1)))
         context.stroke()
 
+        context.select_font_face("Purisa", cairo.FONT_SLANT_NORMAL,
+                                 cairo.FONT_WEIGHT_NORMAL)
+        size = self.FONT_SIZE
+        context.set_font_size(size)
+        x_bearing, y_bearing, width, height, x_advance, y_advance = (
+            context.text_extents(self.name))
+        print(y_bearing, height, y_advance)
+        context.move_to(-width/2, -(y_bearing + height/2))
+        context.show_text(self.name)
+        context.new_path()
+
     def __str__(self):
         return f'<Node {self.x},{self.y}>'
 
@@ -49,7 +60,7 @@ class Edge:
         width = max(context.device_to_user_distance(1, 1))
         context.set_line_width(width)
         context.stroke()
-        context.set_line_width(0)
+
         context.select_font_face("Purisa", cairo.FONT_SLANT_NORMAL,
                                  cairo.FONT_WEIGHT_NORMAL)
         size = self.FONT_SIZE*width
@@ -57,7 +68,7 @@ class Edge:
         x_bearing, y_bearing, width, height, x_advance, y_advance = (
             context.text_extents(str(self.w)))
         context.move_to(self.u.x + (self.v.x - self.u.x) / 2 - x_advance/2,
-                        self.u.y + (self.v.y - self.u.y) / 2 - height/2)
+                        self.u.y + (self.v.y - self.u.y) / 2 + height/2)
         context.show_text(str(self.w))
         context.new_path()
 
@@ -139,7 +150,7 @@ class GraphManipulator(InteractiveSurface):
         while node_index:
             node_index, letter = divmod(node_index, len(all_letters))
             letters.append(all_letters[letter])
-        n = Node(x, y, self.NODE_RADIUS, ''.join(letters))
+        n = Node(x, y, self.NODE_RADIUS, ''.join(letters) or all_letters[0])
         self.nodes.append(n)
         self.surface.add(n)
         self.surface.redraw()
