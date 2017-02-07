@@ -91,31 +91,6 @@ class Surface:
             self.context.restore()
         self._update()
 
-    def circle_device_radius(self, x, y, device_radius):
-        x, y = self.context.user_to_device(x, y)
-        class Circle:
-            layer = 5
-            def render(self, context):
-                context.identity_matrix()
-                context.translate(x, y)
-                context.arc(0, 0, device_radius, 0, 2*np.pi)
-                context.set_source_rgba(1, 0, 0, 0.8)
-                context.fill()
-        self.add(Circle())
-        self.redraw()
-
-    def _poly(self, *points):
-        self.context.move_to(*points[0])
-        for p in points[1:]:
-            self.context.line_to(*p)
-        self.context.close_path()
-        self.context.set_source_rgba(1, 0, 0, 0.8)
-        self.context.fill()
-
-    @save_restore
-    def poly(self, *points):
-        self._poly(*points)
-
     def zoom(self, x, y, f):
         self.context.translate(x, y)
         self.context.scale(f, f)
