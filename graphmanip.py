@@ -50,14 +50,12 @@ class FutureEvent:
         self.num = num
 
     def __await__(self):
-        return (yield self)
+        ev = yield self
+        assert self.filter(ev)
+        return ev
 
     def filter(self, ev: tkinter.Event):
         return ev.type == self.event_type and ev.num == self.num
-
-
-def left_click():
-    return FutureEvent
 
 
 class GraphFutures:
@@ -71,8 +69,20 @@ class GraphFutures:
     def get_event_xy(self, event):
         return self.surface.device_to_user(event.x, event.y)
 
-    async def left_click(self):
+    async def left_pressed(self):
         ev = await FutureEvent(tkinter.EventType.ButtonPress, 1)
+        return self.get_event_xy(ev)
+
+    async def left_released(self):
+        ev = await FutureEvent(tkinter.EventType.ButtonRelease, 1)
+        return self.get_event_xy(ev)
+
+    async def right_pressed(self):
+        ev = await FutureEvent(tkinter.EventType.ButtonPress, 3)
+        return self.get_event_xy(ev)
+
+    async def right_released(self):
+        ev = await FutureEvent(tkinter.EventType.ButtonRelease, 3)
         return self.get_event_xy(ev)
 
 
@@ -95,21 +105,17 @@ class GraphManipulator(tkinter.Tk):
         self.nodes = []
         self.edges = []
         self.current_node = None
+        self.current_coro = self.current_future = None
 
-        def ev_xy(f):
-            @wraps(f)
-            def wrapped(ev):
-                x, y = self.surface.device_to_user(ev.x, ev.y)
-                return f(x, y, ev)
-
-            return wrapped
-
-        self.bind('<Button-1>', ev_xy(self.left_pressed))
-        self.bind('<ButtonRelease-1>', ev_xy(self.left_released))
-        # self.bind('<Button-3>', ev_xy(self.right_click))
-        self.bind('<Button-4>', ev_xy(self.scroll_up))
-        self.bind('<Button-5>', ev_xy(self.scroll_down))
+        self.bind('<Button>', self.dispatch_event)
+        self.bind('<ButtonRelease>', self.dispatch_event)
         self.bind('<Configure>', self.on_configure)
+        self.event_handler = {
+            (tkinter.EventType.ButtonPress, 1): self.on_left_pressed,
+            (tkinter.EventType.ButtonRelease, 1): self.on_left_released,
+            (tkinter.EventType.ButtonPress, 4): self.on_scroll_up,
+            (tkinter.EventType.ButtonRelease, 5): self.on_scroll_down,
+        }
 
         self.mainloop()
 
@@ -145,10 +151,27 @@ class GraphManipulator(tkinter.Tk):
             self.surface.redraw()
         return n
 
-    def left_pressed(self, x, y, ev):
+    def dispatch_event(self, ev):
+        if self.current_future and self.current_future.filter(ev):
+            try:
+                future = self.current_coro.send(ev)
+            except StopIteration:
+                self.current_coro = self.current_future = None
+            else:
+                self.current_future = future
+            return
+        try:
+            fn = self.handlers[ev.type, ev.num]
+        except KeyError:
+            pass
+        else:
+            x, y = self.surface.device_to_user(ev.x, ev.y)
+            fn(x, y, ev)
+
+    def on_left_pressed(self, x, y, ev):
         self.current_node = self.find_or_add_node(x, y)
 
-    def left_released(self, x, y, ev):
+    def on_left_released(self, x, y, ev):
         if self.current_node is None:
             print('left_released: current_node is None')
             return
@@ -160,10 +183,10 @@ class GraphManipulator(tkinter.Tk):
             self.surface.add(e)
             self.surface.redraw()
 
-    def scroll_up(self, x, y, ev):
+    def on_scroll_up(self, x, y, ev):
         self.surface.zoom(x, y, self.SCROLL_SCALE)
 
-    def scroll_down(self, x, y, ev):
+    def on_scroll_down(self, x, y, ev):
         self.surface.zoom(x, y, 1/self.SCROLL_SCALE)
 
 
