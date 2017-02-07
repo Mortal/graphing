@@ -47,7 +47,10 @@ class Edge:
         context.stroke()
         context.move_to(self.u.x + (self.v.x - self.u.x) / 2,
                         self.u.y + (self.v.y - self.u.y) / 2)
-        context
+        context.select_font_face("Purisa", cairo.FONT_SLANT_NORMAL,
+                                 cairo.FONT_WEIGHT_NORMAL)
+        context.set_font_size(13)
+        context.show_text(
         # TODO draw weight
 
     def __str__(self):
