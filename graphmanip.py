@@ -170,11 +170,14 @@ class GraphManipulator(tkinter.Tk):
             if dist < r ** 2:
                 return closest
 
-    def find_edge(self, x, y):
-        edges = [e for e in self.nodes
+    def find_edge(self, x, y, device_tol=5):
+        tol = device_tol / self.surface.current_scale()
+        edges = [e for e in self.edges
                  if e.x0 <= x <= e.x1 and e.y0 <= y <= e.y1]
-        for edges:
-            dist, closest = min(
+        for e in edges:
+            dist, closest = min((e.dist(x, y), e) for e in edges)
+            if dist < tol ** 2:
+                return closest
 
     def add_node(self, x, y):
         n = Node(x, y, self.NODE_RADIUS)
@@ -217,7 +220,19 @@ class GraphManipulator(tkinter.Tk):
         self.current_future = future
 
     async def on_left_pressed(self, x, y, ev):
-        u = self.find_or_add_node(x, y)
+        u = self.find_node(x, y)
+        if u:
+            await self.add_edge_from(u)
+            return
+        e = self.find_edge(x, y)
+        if e:
+            self.edges.remove(e)
+            self.surface.remove(e)
+            self.surface.redraw()
+            return
+        await self.add_edge_from(self.add_node(x, y))
+
+    async def add_edge_from(self, u):
         x, y = await self.futures.left_released()
         v = self.find_or_add_node(x, y)
         e = Edge(u, v, len(self.edges))
