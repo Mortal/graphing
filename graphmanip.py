@@ -1,3 +1,4 @@
+import string
 import math
 from math import pi as PI
 import tkinter
@@ -132,7 +133,13 @@ class GraphManipulator(InteractiveSurface):
                 return closest
 
     def add_node(self, x, y):
-        n = Node(x, y, self.NODE_RADIUS)
+        node_index = len(self.nodes)
+        all_letters = string.ascii_lowercase
+        letters = []
+        while node_index:
+            node_index, letter = divmod(node_index, len(all_letters))
+            letters.append(all_letters[letter])
+        n = Node(x, y, self.NODE_RADIUS, ''.join(letters))
         self.nodes.append(n)
         self.surface.add(n)
         self.surface.redraw()
