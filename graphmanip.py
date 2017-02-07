@@ -270,6 +270,8 @@ class GraphManipulator(tkinter.Tk):
     async def add_edge_from(self, u):
         x, y = await self.futures.left_released()
         v = self.find_or_add_node(x, y)
+        if u == v:
+            return
         e = Edge(u, v, len(self.edges))
         if self.edges.setdefault(e.endpoint_ids, e) is e:
             self.edge_by_weight.append(e)
