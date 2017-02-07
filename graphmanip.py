@@ -93,6 +93,12 @@ class FutureEvent:
         self.event_type = event_type
         self.num = num
 
+        which = {1: 'left', 3: 'right'}.get(num, '?')
+        whats = {tkinter.EventType.ButtonPress: 'Press',
+                 tkinter.EventType.ButtonRelease: 'Release'}
+        what = whats.get(event_type, '?')
+        self.help = f'{what} the {which} mouse button'
+
     def __await__(self):
         ev = yield self
         assert self.filter(ev)
@@ -211,6 +217,7 @@ class GraphManipulator(tkinter.Tk):
                 self.current_coro = self.current_future = None
             else:
                 self.current_future = future
+                print(future.help)
             return
         try:
             fn = self.event_handler[ev.type, ev.num]
