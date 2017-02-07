@@ -32,7 +32,12 @@ class Edge:
     layer = 5
 
     def __init__(self, u, v, w):
+        u, v = min(u, v, key=id), max(u, v, key=id)
         self.u, self.v, self.w = u, v, w
+
+    @property
+    def endpoint_ids(self):
+        return (id(self.u), id(self.v))
 
     def render(self, context):
         context.move_to(self.u.x, self.u.y)
@@ -134,7 +139,7 @@ class GraphManipulator(tkinter.Tk):
         self.surface.pack(expand=True, fill='both')
 
         self.nodes = []
-        self.edges = []
+        self.edges = {}
         self.current_node = None
         self.current_coro = self.current_future = None
         self.futures = GraphFutures(self)
@@ -172,7 +177,7 @@ class GraphManipulator(tkinter.Tk):
 
     def find_edge(self, x, y, device_tol=5):
         tol = device_tol / self.surface.current_scale()
-        edges = [e for e in self.edges
+        edges = [e for e in self.edges.values()
                  if e.x0 <= x <= e.x1 and e.y0 <= y <= e.y1]
         for e in edges:
             dist, closest = min((e.dist(x, y), e) for e in edges)
@@ -226,7 +231,7 @@ class GraphManipulator(tkinter.Tk):
             return
         e = self.find_edge(x, y)
         if e:
-            self.edges.remove(e)
+            del self.edges[e.endpoint_ids]
             self.surface.remove(e)
             self.surface.redraw()
             return
@@ -236,9 +241,11 @@ class GraphManipulator(tkinter.Tk):
         x, y = await self.futures.left_released()
         v = self.find_or_add_node(x, y)
         e = Edge(u, v, len(self.edges))
-        self.edges.append(e)
-        self.surface.add(e)
-        self.surface.redraw()
+        if self.edges.setdefault(e.endpoint_ids, e) is e:
+            self.surface.add(e)
+            self.surface.redraw()
+        else:
+            print(f'Edge {e} already exists')
 
     def on_scroll_up(self, x, y, ev):
         self.surface.zoom(x, y, self.SCROLL_SCALE)
