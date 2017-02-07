@@ -42,15 +42,8 @@ class ExampleGui(tkinter.Tk):
 
         self.geometry("{}x{}".format(w, h))
 
-        self.surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
-        self.context = cairo.Context(self.surface)
-
-        self._image_ref = PIL.ImageTk.PhotoImage('RGBA', (w, h))
-        self.draw_history = []
-        self.redraw()
-
-        self.label = tkinter.Label(self, image=self._image_ref)
-        self.label.pack(expand=True, fill="both")
+        self.surface = Surface(self, w, h)
+        self.surface.pack(expand=True, fill='both')
 
         self.bind('<Button>', self.on_press)
         self.bind('<ButtonRelease>', self.on_release)
@@ -59,29 +52,12 @@ class ExampleGui(tkinter.Tk):
         self.mainloop()
 
     def on_configure(self, ev: tkinter.Event):
-        cur_w, cur_h = self.surface.get_width(), self.surface.get_height()
+        cur_w, cur_h = self.surface.width, self.surface.height
         w, h = ev.width, ev.height
         if (cur_w, cur_h) != (w, h):
-            cur_x0 = self.context.device_to_user(0, 0)[0]
-            cur_x1 = self.context.device_to_user(cur_w, 0)[0]
-            cur_y0 = self.context.device_to_user(0, 0)[1]
-            cur_y1 = self.context.device_to_user(0, cur_h)[1]
-            new_scale = min(h / (cur_y1 - cur_y0), w / (cur_x1 - cur_x0))
-
-            self.surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
-            self.context = cairo.Context(self.surface)
-            self.context.translate(cur_x0, cur_y0)
-            self.context.scale(new_scale, new_scale)
-            self._image_ref = PIL.ImageTk.PhotoImage('RGBA', (w, h))
-            self.label.configure(image=self._image_ref)
-            self.label.pack(expand=True, fill="both")
-            self.redraw()
-
-    def paste(self):
-        w, h = self.surface.get_width(), self.surface.get_height()
-        surface_data = self.surface.get_data().obj
-        img = PIL.Image.frombytes("RGBA", (w, h), surface_data, "raw", "BGRA", 0, 1)
-        self._image_ref.paste(img)
+            self.surface.resize(w, h)
+            self.surface.pack(expand=True, fill="both")
+            self.surface.redraw()
 
     def on_release(self, ev):
         assert ev.type == tkinter.EventType.ButtonRelease, ev
@@ -106,15 +82,6 @@ class ExampleGui(tkinter.Tk):
     @draw_history
     def poly(self, *points):
         self._poly(*points)
-
-    def redraw(self):
-        self.context.save()
-        self.context.set_source_rgba(1, 1, 1, 1)
-        self.context.paint()
-        self.context.restore()
-        for call in self.draw_history:
-            call()
-        self.paste()
 
     def on_press(self, ev):
         assert ev.type == tkinter.EventType.ButtonPress, ev
