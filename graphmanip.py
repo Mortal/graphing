@@ -262,10 +262,28 @@ class GraphManipulator(tkinter.Tk):
             print(f'Edge {e} already exists')
 
     def on_scroll_up(self, x, y, ev):
-        self.surface.zoom(x, y, self.SCROLL_SCALE)
+        v = self.find_node(x, y)
+        e = v or self.find_edge(x, y)
+        if e and not v:
+            self.swap_edge_weights(e.w-1, e.w)
+        else:
+            self.surface.zoom(x, y, self.SCROLL_SCALE)
 
     def on_scroll_down(self, x, y, ev):
-        self.surface.zoom(x, y, 1/self.SCROLL_SCALE)
+        v = self.find_node(x, y)
+        e = v or self.find_edge(x, y)
+        if e and not v:
+            self.swap_edge_weights(e.w-1, e.w)
+        else:
+            self.surface.zoom(x, y, 1/self.SCROLL_SCALE)
+
+    def swap_edge_weights(self, i, j):
+        edges = self.edge_by_weight
+        if 0 <= i < len(edges) and 0 <= j < len(edges):
+            edges[i], edges[j] = edges[j], edges[i]
+            edges[i].w = i
+            edges[j].w = j
+            self.surface.redraw()
 
 
 if __name__ == "__main__":
