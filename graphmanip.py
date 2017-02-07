@@ -4,6 +4,7 @@ from math import pi as PI
 import tkinter
 from functools import wraps
 
+import cairo
 from surface import Surface
 
 
@@ -45,13 +46,13 @@ class Edge:
         context.set_source_rgba(0, 0, 0, 1)
         context.set_line_width(max(context.device_to_user_distance(1, 1)))
         context.stroke()
+        context.set_line_width(0)
         context.move_to(self.u.x + (self.v.x - self.u.x) / 2,
                         self.u.y + (self.v.y - self.u.y) / 2)
         context.select_font_face("Purisa", cairo.FONT_SLANT_NORMAL,
                                  cairo.FONT_WEIGHT_NORMAL)
         context.set_font_size(13)
-        context.show_text(
-        # TODO draw weight
+        context.show_text(str(self.w))
 
     def __str__(self):
         return f'<Edge {self.w}>'
