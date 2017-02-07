@@ -1,3 +1,4 @@
+import inspect
 from math import pi as PI
 import tkinter
 from functools import wraps
@@ -106,13 +107,13 @@ class GraphManipulator(tkinter.Tk):
         self.edges = []
         self.current_node = None
         self.current_coro = self.current_future = None
+        self.futures = GraphFutures(self)
 
         self.bind('<Button>', self.dispatch_event)
         self.bind('<ButtonRelease>', self.dispatch_event)
         self.bind('<Configure>', self.on_configure)
         self.event_handler = {
             (tkinter.EventType.ButtonPress, 1): self.on_left_pressed,
-            (tkinter.EventType.ButtonRelease, 1): self.on_left_released,
             (tkinter.EventType.ButtonPress, 4): self.on_scroll_up,
             (tkinter.EventType.ButtonRelease, 5): self.on_scroll_down,
         }
@@ -133,23 +134,21 @@ class GraphManipulator(tkinter.Tk):
         y1 = y + r
         nodes = [n for n in self.nodes
                  if x0 <= n.x <= x1 and y0 <= n.y <= y1]
-        print(f'{len(nodes)} candidate close nodes')
         if nodes:
             dist, closest = min(((n.x - x) ** 2 + (n.y - y) ** 2, n)
                                 for n in nodes)
-            print(f'Closest at distance {dist} (comp. {r**2})')
             if dist < r ** 2:
                 return closest
 
-    def find_or_add_node(self, x, y):
-        n = self.find_node(x, y)
-        if not n:
-            print(f'Add node at {x} {y}')
-            n = Node(x, y, self.NODE_RADIUS)
-            self.nodes.append(n)
-            self.surface.add(n)
-            self.surface.redraw()
+    def add_node(self, x, y):
+        n = Node(x, y, self.NODE_RADIUS)
+        self.nodes.append(n)
+        self.surface.add(n)
+        self.surface.redraw()
         return n
+
+    def find_or_add_node(self, x, y):
+        return self.find_node(x, y) or self.add_node(x, y)
 
     def dispatch_event(self, ev):
         if self.current_future and self.current_future.filter(ev):
@@ -161,27 +160,34 @@ class GraphManipulator(tkinter.Tk):
                 self.current_future = future
             return
         try:
-            fn = self.handlers[ev.type, ev.num]
+            fn = self.event_handler[ev.type, ev.num]
         except KeyError:
             pass
         else:
             x, y = self.surface.device_to_user(ev.x, ev.y)
-            fn(x, y, ev)
+            res = fn(x, y, ev)
+            if inspect.iscoroutine(res):
+                self.set_coro(res)
 
-    def on_left_pressed(self, x, y, ev):
-        self.current_node = self.find_or_add_node(x, y)
-
-    def on_left_released(self, x, y, ev):
-        if self.current_node is None:
-            print('left_released: current_node is None')
+    def set_coro(self, coro):
+        try:
+            future = coro.send(None)
+        except StopIteration:
             return
-        n = self.find_or_add_node(x, y)
-        if n != self.current_node:
-            e = Edge(self.current_node, n, len(self.edges))
-            self.current_node = None
-            self.edges.append(e)
-            self.surface.add(e)
-            self.surface.redraw()
+        if self.current_coro:
+            print(f"Warning: Closing current coro {self.current_coro}")
+            self.current_coro.close()
+        self.current_coro = coro
+        self.current_future = future
+
+    async def on_left_pressed(self, x, y, ev):
+        u = self.find_or_add_node(x, y)
+        x, y = await self.futures.left_released()
+        v = self.find_or_add_node(x, y)
+        e = Edge(u, v, len(self.edges))
+        self.edges.append(e)
+        self.surface.add(e)
+        self.surface.redraw()
 
     def on_scroll_up(self, x, y, ev):
         self.surface.zoom(x, y, self.SCROLL_SCALE)
