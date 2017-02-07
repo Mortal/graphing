@@ -111,13 +111,13 @@ class FutureEvent:
         return ev.type == self.event_type and ev.num == self.num
 
 
-class GraphFutures:
-    def __init__(self, graph_manipulator):
-        self.graph_manipulator = graph_manipulator
+class SurfaceFutures:
+    def __init__(self, interactive_surface):
+        self.interactive_surface = interactive_surface
 
     @property
     def surface(self):
-        return self.graph_manipulator.surface
+        return self.interactive_surface.surface
 
     def get_event_xy(self, event):
         return self.surface.device_to_user(event.x, event.y)
@@ -139,46 +139,89 @@ class GraphFutures:
         return self.get_event_xy(ev)
 
 
-class GraphManipulator(tkinter.Tk):
+class InteractiveSurface(tkinter.Tk):
     SCROLL_SCALE = 5/4
-    NODE_RADIUS = 10
+    INITIAL_SIZE = 800, 600
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.points = []
-
-        w, h = 800, 600
-
+        w, h = self.INITIAL_SIZE
         self.geometry("{}x{}".format(w, h))
-
         self.surface = Surface(self, w, h)
         self.surface.pack(expand=True, fill='both')
 
-        self.nodes = []
-        self.edges = {}
-        self.edge_by_weight = []
         self.current_node = None
         self.current_coro = self.current_future = None
-        self.futures = GraphFutures(self)
+        self.futures = SurfaceFutures(self)
 
         self.bind('<Button>', self.dispatch_event)
         self.bind('<ButtonRelease>', self.dispatch_event)
         self.bind('<Configure>', self.on_configure)
+
         self.event_handler = {
-            (tkinter.EventType.ButtonPress, 1): self.on_left_pressed,
-            (tkinter.EventType.ButtonPress, 3): self.on_right_pressed,
             (tkinter.EventType.ButtonPress, 4): self.on_scroll_up,
             (tkinter.EventType.ButtonRelease, 5): self.on_scroll_down,
         }
-
-        self.mainloop()
 
     def on_configure(self, ev: tkinter.Event):
         cur_w, cur_h = self.surface.width, self.surface.height
         w, h = ev.width, ev.height
         if (cur_w, cur_h) != (w, h):
             self.surface.resize(w, h)
+
+    def dispatch_event(self, ev):
+        if self.current_future and self.current_future.filter(ev):
+            try:
+                future = self.current_coro.send(ev)
+            except StopIteration:
+                self.current_coro = self.current_future = None
+            else:
+                self.current_future = future
+                print(future.help)
+            return
+        try:
+            fn = self.event_handler[ev.type, ev.num]
+        except KeyError:
+            pass
+        else:
+            x, y = self.surface.device_to_user(ev.x, ev.y)
+            res = fn(x, y, ev)
+            if inspect.iscoroutine(res):
+                self.set_coro(res)
+
+    def set_coro(self, coro):
+        try:
+            future = coro.send(None)
+        except StopIteration:
+            return
+        if self.current_coro:
+            print(f"Warning: Closing current coro {self.current_coro}")
+            self.current_coro.close()
+        self.current_coro = coro
+        self.current_future = future
+        print(future.help)
+
+    def on_scroll_up(self, x, y, ev):
+        self.surface.zoom(x, y, self.SCROLL_SCALE)
+
+    def on_scroll_down(self, x, y, ev):
+        self.surface.zoom(x, y, 1/self.SCROLL_SCALE)
+
+
+class GraphManipulator(InteractiveSurface):
+    NODE_RADIUS = 10
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.nodes = []
+        self.edges = {}
+        self.edge_by_weight = []
+
+        self.event_handler.update({
+            (tkinter.EventType.ButtonPress, 1): self.on_left_pressed,
+            (tkinter.EventType.ButtonPress, 3): self.on_right_pressed,
+        })
 
     def find_node(self, x, y):
         r = self.NODE_RADIUS / self.surface.current_scale()
@@ -212,38 +255,6 @@ class GraphManipulator(tkinter.Tk):
 
     def find_or_add_node(self, x, y):
         return self.find_node(x, y) or self.add_node(x, y)
-
-    def dispatch_event(self, ev):
-        if self.current_future and self.current_future.filter(ev):
-            try:
-                future = self.current_coro.send(ev)
-            except StopIteration:
-                self.current_coro = self.current_future = None
-            else:
-                self.current_future = future
-                print(future.help)
-            return
-        try:
-            fn = self.event_handler[ev.type, ev.num]
-        except KeyError:
-            pass
-        else:
-            x, y = self.surface.device_to_user(ev.x, ev.y)
-            res = fn(x, y, ev)
-            if inspect.iscoroutine(res):
-                self.set_coro(res)
-
-    def set_coro(self, coro):
-        try:
-            future = coro.send(None)
-        except StopIteration:
-            return
-        if self.current_coro:
-            print(f"Warning: Closing current coro {self.current_coro}")
-            self.current_coro.close()
-        self.current_coro = coro
-        self.current_future = future
-        print(future.help)
 
     async def on_left_pressed(self, x, y, ev):
         u = self.find_node(x, y)
@@ -286,7 +297,7 @@ class GraphManipulator(tkinter.Tk):
         if e and not v:
             self.swap_edge_weights(e.w-1, e.w)
         else:
-            self.surface.zoom(x, y, self.SCROLL_SCALE)
+            super().on_scroll_up(x, y, ev)
 
     def on_scroll_down(self, x, y, ev):
         v = self.find_node(x, y)
@@ -294,7 +305,7 @@ class GraphManipulator(tkinter.Tk):
         if e and not v:
             self.swap_edge_weights(e.w, e.w+1)
         else:
-            self.surface.zoom(x, y, 1/self.SCROLL_SCALE)
+            super().on_scroll_down(x, y, ev)
 
     def swap_edge_weights(self, i, j):
         edges = self.edge_by_weight
@@ -306,4 +317,4 @@ class GraphManipulator(tkinter.Tk):
 
 
 if __name__ == "__main__":
-    GraphManipulator()
+    GraphManipulator().mainloop()
