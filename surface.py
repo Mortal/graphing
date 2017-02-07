@@ -104,16 +104,64 @@ class Surface:
         return self.context.device_to_user(x, y)
 
 
+try:
+    from tkinter import EventType
+except ImportError:
+    import enum
+    class EventType(str, enum.Enum):
+        KeyPress = '2'
+        Key = KeyPress,
+        KeyRelease = '3'
+        ButtonPress = '4'
+        Button = ButtonPress,
+        ButtonRelease = '5'
+        Motion = '6'
+        Enter = '7'
+        Leave = '8'
+        FocusIn = '9'
+        FocusOut = '10'
+        Keymap = '11'           # undocumented
+        Expose = '12'
+        GraphicsExpose = '13'   # undocumented
+        NoExpose = '14'         # undocumented
+        Visibility = '15'
+        Create = '16'
+        Destroy = '17'
+        Unmap = '18'
+        Map = '19'
+        MapRequest = '20'
+        Reparent = '21'
+        Configure = '22'
+        ConfigureRequest = '23'
+        Gravity = '24'
+        ResizeRequest = '25'
+        Circulate = '26'
+        CirculateRequest = '27'
+        Property = '28'
+        SelectionClear = '29'   # undocumented
+        SelectionRequest = '30' # undocumented
+        Selection = '31'        # undocumented
+        Colormap = '32'
+        ClientMessage = '33'    # undocumented
+        Mapping = '34'          # undocumented
+        VirtualEvent = '35',    # undocumented
+        Activate = '36',
+        Deactivate = '37',
+        MouseWheel = '38',
+        def __str__(self):
+            return self.name
+
+
 class FutureEvent:
-    def __init__(self, event_type: tkinter.EventType, num: int):
+    def __init__(self, event_type, num: int):
         self.event_type = event_type
         self.num = num
 
         which = {1: 'left', 3: 'right'}.get(num, '?')
-        whats = {tkinter.EventType.ButtonPress: 'Press',
-                 tkinter.EventType.ButtonRelease: 'Release'}
+        whats = {EventType.ButtonPress: 'Press',
+                 EventType.ButtonRelease: 'Release'}
         what = whats.get(event_type, '?')
-        self.help = f'{what} the {which} mouse button'
+        self.help = '%s the %s mouse button' % (what, which)
 
     def __await__(self):
         ev = yield self
@@ -136,19 +184,19 @@ class SurfaceFutures:
         return self.surface.device_to_user(event.x, event.y)
 
     async def left_pressed(self):
-        ev = await FutureEvent(tkinter.EventType.ButtonPress, 1)
+        ev = await FutureEvent(EventType.ButtonPress, 1)
         return self.get_event_xy(ev)
 
     async def left_released(self):
-        ev = await FutureEvent(tkinter.EventType.ButtonRelease, 1)
+        ev = await FutureEvent(EventType.ButtonRelease, 1)
         return self.get_event_xy(ev)
 
     async def right_pressed(self):
-        ev = await FutureEvent(tkinter.EventType.ButtonPress, 3)
+        ev = await FutureEvent(EventType.ButtonPress, 3)
         return self.get_event_xy(ev)
 
     async def right_released(self):
-        ev = await FutureEvent(tkinter.EventType.ButtonRelease, 3)
+        ev = await FutureEvent(EventType.ButtonRelease, 3)
         return self.get_event_xy(ev)
 
 
@@ -172,8 +220,8 @@ class InteractiveSurface(tkinter.Tk):
         self.bind('<Configure>', self.on_configure)
 
         self.event_handler = {
-            (tkinter.EventType.ButtonPress, 4): self.on_scroll_up,
-            (tkinter.EventType.ButtonRelease, 5): self.on_scroll_down,
+            (EventType.ButtonPress, 4): self.on_scroll_up,
+            (EventType.ButtonRelease, 5): self.on_scroll_down,
         }
 
     def on_configure(self, ev: tkinter.Event):
@@ -208,7 +256,7 @@ class InteractiveSurface(tkinter.Tk):
         except StopIteration:
             return
         if self.current_coro:
-            print(f"Warning: Closing current coro {self.current_coro}")
+            print("Warning: Closing current coro %s" % self.current_coro)
             self.current_coro.close()
         self.current_coro = coro
         self.current_future = future

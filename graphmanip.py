@@ -4,7 +4,7 @@ from math import pi as PI
 import tkinter
 
 import cairo
-from surface import InteractiveSurface
+from surface import InteractiveSurface, EventType
 
 
 class Node:
@@ -38,7 +38,7 @@ class Node:
         context.new_path()
 
     def __str__(self):
-        return f'<Node {self.x},{self.y}>'
+        return '<Node %s,%s>' % (self.x, self.y)
 
 
 class Edge:
@@ -73,7 +73,7 @@ class Edge:
         context.new_path()
 
     def __str__(self):
-        return f'<Edge {self.w}>'
+        return '<Edge %s>' % self.w
 
     @property
     def x0(self):
@@ -105,6 +105,31 @@ class Edge:
         return p_dist * math.sin(angle)
 
 
+def name_from_index(i):
+    '''
+    >>> single_letter_names = [name_from_index(i) for i in range(26)]
+    >>> single_letter_names == list(string.ascii_lowercase)
+    True
+    >>> name_from_index(26)
+    'aa'
+    >>> name_from_index(26 + 26**2)
+    'aaa'
+    >>> name_from_index(26 + 26**2 + 5)
+    'aaf'
+    '''
+    Σ = string.ascii_lowercase
+    n = len(Σ)
+    l = 1
+    while i >= n ** l:
+        i -= n ** l
+        l += 1
+    s = []
+    for _ in range(l):
+        i, letter = divmod(i, n)
+        s.append(Σ[letter])
+    return ''.join(reversed(s))
+
+
 class GraphManipulator(InteractiveSurface):
     NODE_RADIUS = 10
 
@@ -116,8 +141,8 @@ class GraphManipulator(InteractiveSurface):
         self.edge_by_weight = []
 
         self.event_handler.update({
-            (tkinter.EventType.ButtonPress, 1): self.on_left_pressed,
-            (tkinter.EventType.ButtonPress, 3): self.on_right_pressed,
+            (EventType.ButtonPress, 1): self.on_left_pressed,
+            (EventType.ButtonPress, 3): self.on_right_pressed,
         })
 
     def find_node(self, x, y):
@@ -144,13 +169,7 @@ class GraphManipulator(InteractiveSurface):
                 return closest
 
     def add_node(self, x, y):
-        node_index = len(self.nodes)
-        all_letters = string.ascii_lowercase
-        letters = []
-        while node_index:
-            node_index, letter = divmod(node_index, len(all_letters))
-            letters.append(all_letters[letter])
-        n = Node(x, y, self.NODE_RADIUS, ''.join(letters) or all_letters[0])
+        n = Node(x, y, self.NODE_RADIUS, name_from_index(len(self.nodes)))
         self.nodes.append(n)
         self.surface.add(n)
         self.surface.redraw()
@@ -192,7 +211,7 @@ class GraphManipulator(InteractiveSurface):
             self.surface.add(e)
             self.surface.redraw()
         else:
-            print(f'Edge {e} already exists')
+            pass  # print(f'Edge {e} already exists')
 
     def on_scroll_up(self, x, y, ev):
         v = self.find_node(x, y)
