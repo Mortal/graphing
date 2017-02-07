@@ -2,7 +2,6 @@ import inspect
 import math
 from math import pi as PI
 import tkinter
-from functools import wraps
 
 import cairo
 from surface import Surface
