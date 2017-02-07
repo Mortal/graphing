@@ -1,4 +1,3 @@
-# http://stackoverflow.com/a/26189022/1570972
 from functools import partial, wraps
 
 import numpy as np
@@ -8,7 +7,20 @@ import PIL.ImageTk
 import cairo
 
 
+def save_restore(fn):
+    @wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        self.context.save()
+        result = fn(self, *args, **kwargs)
+        self.context.restore()
+        return result
+
+    return wrapper
+
+
 def draw_history(fn):
+    fn = save_restore(fn)
+
     @wraps(fn)
     def wrapper(self, *args, **kwargs):
         self.draw_history.append(partial(fn, self, *args, **kwargs))
@@ -19,6 +31,8 @@ def draw_history(fn):
 
 
 class ExampleGui(tkinter.Tk):
+    SCROLL_SCALE = 5/4
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -40,8 +54,28 @@ class ExampleGui(tkinter.Tk):
 
         self.bind('<Button>', self.on_press)
         self.bind('<ButtonRelease>', self.on_release)
+        self.bind('<Configure>', self.on_configure)
 
         self.mainloop()
+
+    def on_configure(self, ev: tkinter.Event):
+        cur_w, cur_h = self.surface.get_width(), self.surface.get_height()
+        w, h = ev.width, ev.height
+        if (cur_w, cur_h) != (w, h):
+            cur_x0 = self.context.device_to_user(0, 0)[0]
+            cur_x1 = self.context.device_to_user(cur_w, 0)[0]
+            cur_y0 = self.context.device_to_user(0, 0)[1]
+            cur_y1 = self.context.device_to_user(0, cur_h)[1]
+            new_scale = min(h / (cur_y1 - cur_y0), w / (cur_x1 - cur_x0))
+
+            self.surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
+            self.context = cairo.Context(self.surface)
+            self.context.translate(cur_x0, cur_y0)
+            self.context.scale(new_scale, new_scale)
+            self._image_ref = PIL.ImageTk.PhotoImage('RGBA', (w, h))
+            self.label.configure(image=self._image_ref)
+            self.label.pack(expand=True, fill="both")
+            self.redraw()
 
     def paste(self):
         w, h = self.surface.get_width(), self.surface.get_height()
@@ -54,29 +88,23 @@ class ExampleGui(tkinter.Tk):
 
     @draw_history
     def circle_device_radius(self, x, y, device_radius):
-        print(f'Draw circle at {x},{y} with device radius {device_radius}')
         x, y = self.context.user_to_device(x, y)
-        self.context.save()
         self.context.identity_matrix()
         self.context.translate(x, y)
         self.context.arc(0, 0, device_radius, 0, 2*np.pi)
         self.context.set_source_rgba(1, 0, 0, 0.8)
         self.context.fill()
-        self.context.restore()
 
     def _poly(self, *points):
-        self.context.save()
         self.context.move_to(*points[0])
         for p in points[1:]:
             self.context.line_to(*p)
         self.context.close_path()
         self.context.set_source_rgba(1, 0, 0, 0.8)
         self.context.fill()
-        self.context.restore()
 
     @draw_history
     def poly(self, *points):
-        print(f"Draw poly {points}")
         self._poly(*points)
 
     def redraw(self):
@@ -107,13 +135,13 @@ class ExampleGui(tkinter.Tk):
 
     def on_press_4(self, x, y):
         self.context.translate(x, y)
-        self.context.scale(2, 2)
+        self.context.scale(self.SCROLL_SCALE, self.SCROLL_SCALE)
         self.context.translate(-x, -y)
         self.redraw()
 
     def on_press_5(self, x, y):
         self.context.translate(x, y)
-        self.context.scale(0.5, 0.5)
+        self.context.scale(1/self.SCROLL_SCALE, 1/self.SCROLL_SCALE)
         self.context.translate(-x, -y)
         self.redraw()
 
