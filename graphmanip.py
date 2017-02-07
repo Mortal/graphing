@@ -45,6 +45,9 @@ class Edge:
         context.set_source_rgba(0, 0, 0, 1)
         context.set_line_width(max(context.device_to_user_distance(1, 1)))
         context.stroke()
+        context.move_to(self.u.x + (self.v.x - self.u.x) / 2,
+                        self.u.y + (self.v.y - self.u.y) / 2)
+        context
         # TODO draw weight
 
     def __str__(self):
@@ -140,6 +143,7 @@ class GraphManipulator(tkinter.Tk):
 
         self.nodes = []
         self.edges = {}
+        self.edge_by_weight = []
         self.current_node = None
         self.current_coro = self.current_future = None
         self.futures = GraphFutures(self)
@@ -232,6 +236,10 @@ class GraphManipulator(tkinter.Tk):
         e = self.find_edge(x, y)
         if e:
             del self.edges[e.endpoint_ids]
+            for o in self.edge_by_weight[e.w+1:]:
+                o.w -= 1
+            print(e.w, self.edge_by_weight)
+            del self.edge_by_weight[e.w]
             self.surface.remove(e)
             self.surface.redraw()
             return
@@ -242,6 +250,7 @@ class GraphManipulator(tkinter.Tk):
         v = self.find_or_add_node(x, y)
         e = Edge(u, v, len(self.edges))
         if self.edges.setdefault(e.endpoint_ids, e) is e:
+            self.edge_by_weight.append(e)
             self.surface.add(e)
             self.surface.redraw()
         else:
