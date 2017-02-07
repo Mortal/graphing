@@ -53,6 +53,7 @@ class Edge:
                                  cairo.FONT_WEIGHT_NORMAL)
         context.set_font_size(13)
         context.show_text(str(self.w))
+        context.new_path()
 
     def __str__(self):
         return f'<Edge {self.w}>'
