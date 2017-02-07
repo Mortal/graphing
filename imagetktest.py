@@ -36,10 +36,11 @@ class ExampleGui(tkinter.Tk):
     def on_press(self, ev):
         assert ev.type == tkinter.EventType.ButtonPress, ev
         x, y = self.surface.device_to_user(ev.x, ev.y)
+        print(f"Clicked button={ev.num} x={x} y={y}")
         try:
             method = getattr(self, 'on_press_%s' % ev.num)
         except AttributeError:
-            print(f"Clicked button={ev.num} x={x} y={y}")
+            pass
         else:
             method(x, y)
 
