@@ -31,6 +31,7 @@ class Node:
 
 class Edge:
     layer = 5
+    FONT_SIZE = 13
 
     def __init__(self, u, v, w):
         u, v = min(u, v, key=id), max(u, v, key=id)
@@ -44,14 +45,16 @@ class Edge:
         context.move_to(self.u.x, self.u.y)
         context.line_to(self.v.x, self.v.y)
         context.set_source_rgba(0, 0, 0, 1)
-        context.set_line_width(max(context.device_to_user_distance(1, 1)))
+        width = max(context.device_to_user_distance(1, 1))
+        context.set_line_width(width)
         context.stroke()
         context.set_line_width(0)
         context.move_to(self.u.x + (self.v.x - self.u.x) / 2,
                         self.u.y + (self.v.y - self.u.y) / 2)
         context.select_font_face("Purisa", cairo.FONT_SLANT_NORMAL,
                                  cairo.FONT_WEIGHT_NORMAL)
-        context.set_font_size(13)
+        size = self.FONT_SIZE*width
+        context.set_font_size(size)
         context.show_text(str(self.w))
         context.new_path()
 
@@ -164,6 +167,7 @@ class GraphManipulator(tkinter.Tk):
         self.bind('<Configure>', self.on_configure)
         self.event_handler = {
             (tkinter.EventType.ButtonPress, 1): self.on_left_pressed,
+            (tkinter.EventType.ButtonPress, 3): self.on_right_pressed,
             (tkinter.EventType.ButtonPress, 4): self.on_scroll_up,
             (tkinter.EventType.ButtonRelease, 5): self.on_scroll_down,
         }
@@ -194,9 +198,9 @@ class GraphManipulator(tkinter.Tk):
         tol = device_tol / self.surface.current_scale()
         edges = [e for e in self.edges.values()
                  if e.x0 <= x <= e.x1 and e.y0 <= y <= e.y1]
-        for e in edges:
+        if edges:
             dist, closest = min((e.dist(x, y), e) for e in edges)
-            if dist < tol ** 2:
+            if dist < tol:
                 return closest
 
     def add_node(self, x, y):
@@ -239,6 +243,7 @@ class GraphManipulator(tkinter.Tk):
             self.current_coro.close()
         self.current_coro = coro
         self.current_future = future
+        print(future.help)
 
     async def on_left_pressed(self, x, y, ev):
         u = self.find_node(x, y)
@@ -250,12 +255,17 @@ class GraphManipulator(tkinter.Tk):
             del self.edges[e.endpoint_ids]
             for o in self.edge_by_weight[e.w+1:]:
                 o.w -= 1
-            print(e.w, self.edge_by_weight)
             del self.edge_by_weight[e.w]
             self.surface.remove(e)
             self.surface.redraw()
             return
         await self.add_edge_from(self.add_node(x, y))
+
+    async def on_right_pressed(self, x, y, ev):
+        u = self.find_node(x, y)
+        if u:
+            u.x, u.y = await self.futures.right_released()
+            self.surface.redraw()
 
     async def add_edge_from(self, u):
         x, y = await self.futures.left_released()
