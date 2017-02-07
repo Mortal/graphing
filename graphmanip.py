@@ -32,7 +32,6 @@ class Node:
         context.set_font_size(size)
         x_bearing, y_bearing, width, height, x_advance, y_advance = (
             context.text_extents(self.name))
-        print(y_bearing, height, y_advance)
         context.move_to(-width/2, -(y_bearing + height/2))
         context.show_text(self.name)
         context.new_path()
@@ -211,7 +210,7 @@ class GraphManipulator(InteractiveSurface):
             self.surface.add(e)
             self.surface.redraw()
         else:
-            pass  # print(f'Edge {e} already exists')
+            print('Edge %s already exists' % e)
 
     def on_scroll_up(self, x, y, ev):
         v = self.find_node(x, y)
