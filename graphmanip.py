@@ -273,7 +273,7 @@ class GraphManipulator(tkinter.Tk):
         v = self.find_node(x, y)
         e = v or self.find_edge(x, y)
         if e and not v:
-            self.swap_edge_weights(e.w-1, e.w)
+            self.swap_edge_weights(e.w, e.w+1)
         else:
             self.surface.zoom(x, y, 1/self.SCROLL_SCALE)
 
