@@ -1,4 +1,5 @@
 import inspect
+import math
 from math import pi as PI
 import tkinter
 from functools import wraps
@@ -53,12 +54,24 @@ class Edge:
         return max(self.u.x, self.v.x)
 
     @property
-    def x0(self):
-        return min(self.u.x, self.v.x)
+    def y0(self):
+        return min(self.u.y, self.v.y)
 
     @property
-    def x1(self):
-        return max(self.u.x, self.v.x)
+    def y1(self):
+        return max(self.u.y, self.v.y)
+
+    def dist(self, x, y):
+        px = x - self.u.x
+        py = y - self.u.y
+        p_dist = math.sqrt(px ** 2 + py ** 2)
+        vx = self.v.x - self.u.x
+        vy = self.v.y - self.u.y
+        p_angle = math.atan2(py, px)
+        v_angle = math.atan2(vy, vx)
+        angle = min((p_angle - v_angle) % (2*PI),
+                    (v_angle - p_angle) % (2*PI))
+        return p_dist * math.sin(angle)
 
 
 class FutureEvent:
@@ -158,8 +171,9 @@ class GraphManipulator(tkinter.Tk):
 
     def find_edge(self, x, y):
         edges = [e for e in self.nodes
-                 if min(e.u.x, e.v.x) <= x <= max(e.u.x, e.v.x) and
-                 min(e.u.y
+                 if e.x0 <= x <= e.x1 and e.y0 <= y <= e.y1]
+        for edges:
+            dist, closest = min(
 
     def add_node(self, x, y):
         n = Node(x, y, self.NODE_RADIUS)
