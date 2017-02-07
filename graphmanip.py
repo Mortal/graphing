@@ -8,9 +8,11 @@ from surface import InteractiveSurface
 
 class Node:
     layer = 10
+    FONT_SIZE = 13
 
-    def __init__(self, x, y, r):
+    def __init__(self, x, y, r, name):
         self.x, self.y, self.r = x, y, r
+        self.name = name
 
     def render(self, context):
         x, y = context.user_to_device(self.x, self.y)
@@ -47,12 +49,14 @@ class Edge:
         context.set_line_width(width)
         context.stroke()
         context.set_line_width(0)
-        context.move_to(self.u.x + (self.v.x - self.u.x) / 2,
-                        self.u.y + (self.v.y - self.u.y) / 2)
         context.select_font_face("Purisa", cairo.FONT_SLANT_NORMAL,
                                  cairo.FONT_WEIGHT_NORMAL)
         size = self.FONT_SIZE*width
         context.set_font_size(size)
+        x_bearing, y_bearing, width, height, x_advance, y_advance = (
+            context.text_extents(str(self.w)))
+        context.move_to(self.u.x + (self.v.x - self.u.x) / 2 - x_advance/2,
+                        self.u.y + (self.v.y - self.u.y) / 2 - height/2)
         context.show_text(str(self.w))
         context.new_path()
 
