@@ -44,6 +44,22 @@ class Edge:
     def __str__(self):
         return f'<Edge {self.w}>'
 
+    @property
+    def x0(self):
+        return min(self.u.x, self.v.x)
+
+    @property
+    def x1(self):
+        return max(self.u.x, self.v.x)
+
+    @property
+    def x0(self):
+        return min(self.u.x, self.v.x)
+
+    @property
+    def x1(self):
+        return max(self.u.x, self.v.x)
+
 
 class FutureEvent:
     def __init__(self, event_type: tkinter.EventType, num: int):
@@ -139,6 +155,11 @@ class GraphManipulator(tkinter.Tk):
                                 for n in nodes)
             if dist < r ** 2:
                 return closest
+
+    def find_edge(self, x, y):
+        edges = [e for e in self.nodes
+                 if min(e.u.x, e.v.x) <= x <= max(e.u.x, e.v.x) and
+                 min(e.u.y
 
     def add_node(self, x, y):
         n = Node(x, y, self.NODE_RADIUS)
