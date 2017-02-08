@@ -1,4 +1,5 @@
 import re
+import sys
 import argparse
 import textwrap
 
@@ -53,9 +54,33 @@ def render_docstring(s, indent):
 
 
 def parse_args(s):
-    def repl(mo):
-        return '%s*args, **kwargs' % (mo.group(1) or ', ')
-    return re.sub(r'(, )?\[.*', repl, s)
+    def add_default(arg):
+        return '%s=None' % arg if '=' not in arg else arg
+
+    def repl(part, depth):
+        if depth:
+            return re.sub(r'[^ ,]+', lambda mo: add_default(mo.group()), part)
+        else:
+            return part
+
+    def parser():
+        i = 0
+        depth = 0
+        for mo in re.finditer(r'[][]|$', s):
+            j = mo.start()
+            c = mo.group()
+            yield repl(s[i:j], depth)
+            if c == '[':
+                depth += 1
+            elif c == ']':
+                depth -= 1
+            if depth < 0:
+                raise ValueError((i, j, s, depth))
+            i = mo.end()
+        if depth != 0:
+            raise ValueError((i, j, s, depth))
+
+    return ''.join(parser())
 
 
 def get_init_docstring(s):

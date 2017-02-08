@@ -520,7 +520,7 @@ class Context():
         '''
         raise NotImplementedError
 
-    def glyph_extents(self, glyphs, *args, **kwargs):
+    def glyph_extents(self, glyphs, num_glyphs=None):
         ''':param glyphs: glyphs
         :type glyphs: a sequence of (int, float, float)
         :param num_glyphs: number of glyphs to measure, defaults to using all
@@ -539,7 +539,7 @@ class Context():
         '''
         raise NotImplementedError
 
-    def glyph_path(self, glyphs, *args, **kwargs):
+    def glyph_path(self, glyphs, num_glyphs=None):
         ''':param glyphs: glyphs to show
         :type glyphs: a sequence of (int, float, float)
         :param num_glyphs: number of glyphs to show, defaults to showing all
@@ -973,7 +973,7 @@ class Context():
         '''
         raise NotImplementedError
 
-    def select_font_face(self, family, *args, **kwargs):
+    def select_font_face(self, family, slant=None, weight=None):
         ''':param family: a font family name
         :type family: str
         :param slant: the :ref:`FONT_SLANT <constants_FONT_SLANT>` of the font,
@@ -1032,7 +1032,7 @@ class Context():
         '''
         raise NotImplementedError
 
-    def set_dash(self, dashes, *args, **kwargs):
+    def set_dash(self, dashes, offset=0):
         ''':param dashes: a sequence specifying alternate lengths of on and off
           stroke portions.
         :type dashes: sequence of float
@@ -1276,7 +1276,7 @@ class Context():
         '''
         raise NotImplementedError
 
-    def set_source_rgba(self, red, green, blue, *args, **kwargs):
+    def set_source_rgba(self, red, green, blue, alpha=1.0):
         ''':param red: red component of color
         :type red: float
         :param green: green component of color
@@ -1299,7 +1299,7 @@ class Context():
         '''
         raise NotImplementedError
 
-    def set_source_surface(self, surface, *args, **kwargs):
+    def set_source_surface(self, surface, x=0.0, y=0.0):
         ''':param surface: a :class:`Surface` to be used to set the source pattern
         :param x: User-space X coordinate for surface origin
         :type x: float
@@ -1341,7 +1341,7 @@ class Context():
         '''
         raise NotImplementedError
 
-    def show_glyphs(self, glyphs, *args, **kwargs):
+    def show_glyphs(self, glyphs, num_glyphs=None):
         ''':param glyphs: glyphs to show
         :type glyphs: a sequence of (int, float, float)
         :param num_glyphs: number of glyphs to show, defaults to showing all
