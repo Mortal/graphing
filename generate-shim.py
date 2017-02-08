@@ -59,13 +59,15 @@ def parse_args(s):
 
 
 def get_init_docstring(s):
-    mo = re.match(r'^\.\. class:: \w+\((.*)\)\n+', s)
+    mo = re.match(r'^\.\. class:: \w+(?:\((.*)\))?\n+', s)
     assert mo
-    args = parse_args(mo.group(1))
+    args = parse_args(mo.group(1) or '')
 
     mo2 = re.search(r'^\n*() *\.\. method::', s, re.M)
-    doc = s[mo.end():mo2.start()]
-    rest = s[mo2.start(1):]
+    end_of_docstring = len(s) if mo2 is None else mo2.start()
+    doc = s[mo.end():end_of_docstring]
+    beginning_of_rest = len(s) if mo2 is None else mo2.start(1)
+    rest = s[beginning_of_rest:]
     return args, doc, rest
 
 
