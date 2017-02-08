@@ -81,12 +81,9 @@ def get_methods(s):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--bases', action='append', default=())
     parser.add_argument('filename')
     parser.add_argument('template')
     args = parser.parse_args()
-
-    base_override = {k: v for kv in args.bases for k, v in [kv.split(':')]}
 
     with open(args.template) as fp:
         print(fp.read(), end='')
@@ -106,7 +103,6 @@ def main():
             super_obj = 'super()'
             init_call = 'super().__init__(%s)'
 
-        bases = base_override.get(class_name, bases)
         print('')
         print('')
         print('class %s(%s):' % (class_name, bases))
