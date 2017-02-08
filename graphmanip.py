@@ -128,11 +128,16 @@ def name_from_index(i):
     'aaf'
     '''
     Σ = string.ascii_lowercase
+    try:
+        return Σ[i]
+    except IndexError:
+        pass
     n = len(Σ)
     l = 1
     while i >= n ** l:
         i -= n ** l
         l += 1
+    assert l > 1  # Special case above handled l == 1
     s = []
     for _ in range(l):
         i, letter = divmod(i, n)
