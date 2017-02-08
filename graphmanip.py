@@ -1,4 +1,5 @@
 import string
+import contextlib
 import math
 from math import pi as PI
 import tkinter
@@ -14,10 +15,13 @@ class Node:
     layer = 10
     FONT_SIZE = 13
     FILL_COLOR = (0.8, 0.8, 0.8, 1)
+    MOVING_COLOR = (0.7, 1.0, 0.7, 1)
+    ADDING_EDGE_COLOR = (1, 1, 0.7, 1)
 
     def __init__(self, x, y, r, name):
         self.x, self.y, self.r = x, y, r
         self.name = name
+        self.fill_color = self.FILL_COLOR
 
     def render(self, context: cairo.Context):
         x, y = context.user_to_device(self.x, self.y)
@@ -25,7 +29,7 @@ class Node:
 
         context.translate(x, y)
         context.arc(0, 0, self.r, 0, 2*PI)
-        context.set_source_rgba(*self.FILL_COLOR)
+        context.set_source_rgba(*self.fill_color)
         context.fill_preserve()
         context.set_source_rgba(0, 0, 0, 1)
         context.set_line_width(1)
@@ -40,6 +44,15 @@ class Node:
         context.move_to(-width/2, -(y_bearing + height/2))
         context.show_text(self.name)
         context.new_path()
+
+    @contextlib.contextmanager
+    def highlight(self, highlight_color):
+        old_color = self.fill_color
+        self.fill_color = highlight_color
+        try:
+            yield
+        finally:
+            self.fill_color = old_color
 
     def __str__(self):
         return self.name
@@ -215,11 +228,12 @@ class GraphManipulator(InteractiveSurface):
     async def on_right_pressed(self, x, y, ev):
         u = self.find_node(x, y)
         if u:
-            u.x, u.y = await self.futures.right_released()
-            self.surface.redraw()
+            with u.highlight(u.MOVING_COLOR):
+                u.x, u.y = await self.futures.right_released()
 
     async def add_edge_from(self, u):
-        x, y = await self.futures.left_released()
+        with u.highlight(u.ADDING_EDGE_COLOR):
+            x, y = await self.futures.left_released()
         v = self.find_or_add_node(x, y)
         if u == v:
             return
