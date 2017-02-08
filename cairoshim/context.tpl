@@ -1,16 +1,20 @@
 from cairo import Context as _Context
 
 
-class ContextMeta(type):
-    def __subclasscheck__(cls, subclass):
-        if subclass is _Context:
+def superclass_of(t):
+    def subclasscheck(cls, subclass):
+        if subclass is t:
             return True
-        return super().__subclasscheck__(subclass)
+        return super(superclass_of_t, cls).__subclasscheck__(subclass)
 
-    def __instancecheck__(cls, instance):
-        if type(instance) is _Context:
+    def instancecheck(cls, instance):
+        if type(instance) is t:
             return True
-        return super().__instancecheck__(subclass)
+        return super(superclass_of_t, cls).__instancecheck__(instance)
 
+    superclass_of_t = type(
+        'superclass_of_%s' % t.__name__, (type,),
+        dict(__subclasscheck__=subclasscheck,
+             __instancecheck__=instancecheck))
 
-class Context(_Context, metaclass=ContextMeta):
+    return superclass_of_t
