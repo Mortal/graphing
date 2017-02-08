@@ -64,7 +64,8 @@ def render_docstring(s, indent):
 
 def parse_args(s):
     def add_default(arg):
-        return '%s=None' % arg if '=' not in arg else arg
+        return ('%s=None' % (arg.split('|')[0])
+                if '=' not in arg else arg)
 
     def repl(part, depth):
         if depth:

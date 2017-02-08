@@ -8,7 +8,7 @@ class Region():
         import cairo
         return cairo.Region(*args, **kwargs)
 
-    def __init__(self, rectangle_int|rectangle_ints=None):
+    def __init__(self, rectangle_int=None):
         '''   :param rectangle_int: a rectangle or a list of rectangle
            :type rectangle_int: :class:`RectangleInt` or [:class:`RectangleInt`]
 
