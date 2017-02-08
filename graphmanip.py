@@ -7,6 +7,9 @@ import cairoshim as cairo
 from surface import InteractiveSurface, EventType
 
 
+FAMILY = 'sans-serif'
+
+
 class Node:
     layer = 10
     FONT_SIZE = 13
@@ -28,7 +31,7 @@ class Node:
         context.set_line_width(1)
         context.stroke()
 
-        context.select_font_face("Purisa", cairo.FONT_SLANT_NORMAL,
+        context.select_font_face(FAMILY, cairo.FONT_SLANT_NORMAL,
                                  cairo.FONT_WEIGHT_NORMAL)
         size = self.FONT_SIZE
         context.set_font_size(size)
@@ -62,7 +65,7 @@ class Edge:
         context.set_line_width(width)
         context.stroke()
 
-        context.select_font_face("Purisa", cairo.FONT_SLANT_NORMAL,
+        context.select_font_face(FAMILY, cairo.FONT_SLANT_NORMAL,
                                  cairo.FONT_WEIGHT_NORMAL)
         size = self.FONT_SIZE*width
         context.set_font_size(size)
