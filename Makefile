@@ -1,9 +1,7 @@
 PYTHON := python3
+FILES := cairoshim/constants.py cairoshim/context.py cairoshim/exceptions.py cairoshim/index.py cairoshim/matrix.py cairoshim/paths.py cairoshim/patterns.py cairoshim/region.py cairoshim/surfaces.py cairoshim/text.py
 
-all: cairoshim/context.py cairoshim/surfaces.py
+all: $(FILES)
 
-cairoshim/context.py: generate-shim.py
-	$(PYTHON) generate-shim.py ~/codes/pycairo/doc/reference/context.rst cairo > cairoshim/context.py
-
-cairoshim/surfaces.py: generate-shim.py
-	$(PYTHON) generate-shim.py ~/codes/pycairo/doc/reference/surfaces.rst cairo > cairoshim/surfaces.py
+$(FILES): cairoshim/%.py: generate-shim.py
+	$(PYTHON) generate-shim.py ~/codes/pycairo/doc/reference/$*.rst cairo > $@

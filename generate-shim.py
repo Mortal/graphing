@@ -5,31 +5,40 @@ import textwrap
 
 
 def get_sections(pattern, s, flags=0):
-    prev_mo = None
-    i = 0
-    for mo in re.finditer(pattern, s, flags):
-        j = mo.start()
+    def sections():
+        prev_mo = None
+        i = 0
+        for mo in re.finditer(pattern, s, flags):
+            j = mo.start()
+            if prev_mo:
+                yield (prev_mo, s[i:j])
+            prev_mo = mo
+            i = mo.end()
+        j = len(s)
         if prev_mo:
             yield (prev_mo, s[i:j])
-        prev_mo = mo
-        i = mo.end()
-    j = len(s)
-    if prev_mo:
-        yield (prev_mo, s[i:j])
+
+    mo = re.search(pattern, s, flags)
+    if mo is None:
+        return s, ()
+    else:
+        return s[:mo.start()], sections()
 
 
 def get_classes(s):
     pattern = r'^\n*class ([A-Z]\w+)\((.*)\)\n==*\n+'
-    for mo, rest in get_sections(pattern, s, re.M):
+    before, classes = get_sections(pattern, s, re.M)
+    for mo, rest in classes:
         name = mo.group(1)
         bases = mo.group(2)
         bases = re.sub(r':[a-z]+:(?:[a-z]+:)?`(\w+)`',
                        lambda mo: mo.group(1), bases)
 
         mo2 = re.search(r'^\n*()\.\.', rest, re.M)
-        assert mo2
-        class_docstring = rest[:mo2.start()]
-        methods = rest[mo2.start(1):]
+        end_of_docstring = len(s) if mo2 is None else mo2.start()
+        beginning_of_rest = len(s) if mo2 is None else mo2.start(1)
+        class_docstring = rest[:end_of_docstring]
+        methods = rest[beginning_of_rest:]
         yield name, bases, class_docstring, methods
 
 
@@ -85,7 +94,8 @@ def parse_args(s):
 
 def get_init_docstring(s):
     mo = re.match(r'^\.\. class:: \w+(?:\((.*)\))?\n+', s)
-    assert mo
+    if mo is None:
+        return None, None, None
     args = parse_args(mo.group(1) or '')
 
     mo2 = re.search(r'^\n*() *\.\. method::', s, re.M)
@@ -98,7 +108,8 @@ def get_init_docstring(s):
 
 def get_methods(s):
     pattern = r'^\s*\.\. method:: (\w+)\((.*)\)\n+'
-    for mo, body in get_sections(pattern, s, re.M):
+    before, methods = get_sections(pattern, s, re.M)
+    for mo, body in methods:
         name = mo.group(1)
         args = parse_args(mo.group(2))
         yield (name, args, textwrap.dedent(body))
@@ -126,6 +137,12 @@ def main():
             print(render_docstring(class_docstring, 4*' '))
             print('')
         init_args, init_doc, rest = get_init_docstring(rest)
+        if init_args is None:
+            print('    def __new__(cls, *args, **kwargs):')
+            print('        raise NotImplementedError(' +
+                  '"no init docstring found")')
+            continue
+
         print('    def __new__(cls, *args, **kwargs):')
         print('        import %s' % real_module)
         print('        return %s.%s(*args, **kwargs)' %
