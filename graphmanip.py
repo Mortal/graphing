@@ -10,6 +10,7 @@ from surface import InteractiveSurface, EventType
 class Node:
     layer = 10
     FONT_SIZE = 13
+    FILL_COLOR = (0.8, 0.8, 0.8, 1)
 
     def __init__(self, x, y, r, name):
         self.x, self.y, self.r = x, y, r
@@ -21,7 +22,7 @@ class Node:
 
         context.translate(x, y)
         context.arc(0, 0, self.r, 0, 2*PI)
-        context.set_source_rgba(0.8, 0.8, 0.8, 1)
+        context.set_source_rgba(*self.FILL_COLOR)
         context.fill_preserve()
         context.set_source_rgba(0, 0, 0, 1)
         context.set_line_width(1)
