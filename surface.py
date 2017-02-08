@@ -239,6 +239,7 @@ class InteractiveSurface(tkinter.Tk):
             else:
                 self.current_future = future
                 print(future.help)
+            self.surface.redraw()
             return
         try:
             fn = self.event_handler[ev.type, ev.num]
@@ -249,6 +250,8 @@ class InteractiveSurface(tkinter.Tk):
             res = fn(x, y, ev)
             if inspect.iscoroutine(res):
                 self.set_coro(res)
+            else:
+                self.surface.redraw()
 
     def set_coro(self, coro):
         try:
@@ -261,6 +264,7 @@ class InteractiveSurface(tkinter.Tk):
         self.current_coro = coro
         self.current_future = future
         print(future.help)
+        self.surface.redraw()
 
     def on_scroll_up(self, x, y, ev):
         self.surface.zoom(x, y, self.SCROLL_SCALE)
