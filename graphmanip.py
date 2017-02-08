@@ -1,11 +1,14 @@
-import string
-import contextlib
 import math
-from math import pi as PI
+import string
 import tkinter
+import importlib
+import traceback
+import contextlib
+from math import pi as PI
 
 import cairoshim as cairo
 from surface import InteractiveSurface, EventType
+import compute
 
 
 FAMILY = 'sans-serif'
@@ -222,6 +225,7 @@ class GraphManipulator(InteractiveSurface):
             del self.edge_by_weight[e.w]
             self.surface.remove(e)
             self.surface.redraw()
+            self.process_graph()
             return
         await self.add_edge_from(self.add_node(x, y))
 
@@ -242,6 +246,7 @@ class GraphManipulator(InteractiveSurface):
             self.edge_by_weight.append(e)
             self.surface.add(e)
             self.surface.redraw()
+            self.process_graph()
         else:
             print('Edge %s already exists' % e)
 
@@ -268,6 +273,25 @@ class GraphManipulator(InteractiveSurface):
             edges[i].w = i
             edges[j].w = j
             self.surface.redraw()
+            self.process_graph()
+
+    def process_graph(self):
+        node_index = {id(node): i for i, node in enumerate(self.nodes)}
+        node_names = [node.name for node in self.nodes]
+        edge_lists = [[] for _ in self.nodes]
+        for e in self.edges.values():
+            u = node_index[id(e.u)]
+            v = node_index[id(e.v)]
+            edge_lists[u].append((v, e.w))
+            edge_lists[v].append((u, e.w))
+        edges = [(node_index[id(e.u)], node_index[id(e.v)])
+                 for e in self.edge_by_weight]
+
+        try:
+            fn = importlib.reload(compute).process_graph
+            fn(edge_lists, edges, node_names)
+        except:
+            traceback.print_exc()
 
 
 if __name__ == "__main__":
