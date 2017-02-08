@@ -82,45 +82,38 @@ def get_methods(s):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('filename')
-    parser.add_argument('template')
+    parser.add_argument('module')
     args = parser.parse_args()
-
-    with open(args.template) as fp:
-        print(fp.read(), end='')
+    real_module = args.module
 
     with open(args.filename) as fp:
         input_file = fp.read()
 
+    first = True
     for class_name, bases, class_docstring, rest in get_classes(input_file):
-        if bases == '':
-            superclass = '_%s' % class_name
-            bases = ('%s, ' % superclass +
-                     'metaclass=superclass_of(%s)' % superclass)
-            super_obj = 'self.wrapped'
-            init_call = 'self.wrapped = %s(%%s)' % superclass
-        else:
-            superclass = bases.split(',')[0]
-            super_obj = 'super()'
-            init_call = 'super().__init__(%s)'
+        if not first:
+            print('')
+            print('')
+        first = False
 
-        print('')
-        print('')
         print('class %s(%s):' % (class_name, bases))
-        print(render_docstring(class_docstring, 4*' '))
-        print('')
+        if class_docstring:
+            print(render_docstring(class_docstring, 4*' '))
+            print('')
         init_args, init_doc, rest = get_init_docstring(rest)
+        print('    def __new__(cls, *args, **kwargs):')
+        print('        import %s' % real_module)
+        print('        return %s.%s(*args, **kwargs)' %
+              (real_module, class_name))
+        print('')
         print('    def __init__(self%s%s):' % (init_args and ', ', init_args))
         print(render_docstring(init_doc, 8*' '))
-        print(8*' ' + init_call % init_args)
+        print('        raise NotImplementedError')
         for name, args, doc in get_methods(rest):
             print('')
             print('    def %s(self%s%s):' % (name, args and ', ', args))
             print(render_docstring(doc, 8*' '))
-            print('        return %s.%s(%s)' % (super_obj, name, args))
-        if super_obj != 'super()':
-            print('')
-            print('    def __getattr__(self, k):')
-            print('        return getattr(%s, k)' % super_obj)
+            print('        raise NotImplementedError')
 
 
 if __name__ == '__main__':

@@ -1,8 +1,4 @@
-from cairo import Context as _Context
-from .metamagic import superclass_of
-
-
-class Context(_Context, metaclass=superclass_of(_Context)):
+class Context():
     '''*Context* is the main object used when drawing with cairo. To draw with cairo,
     you create a *Context*, set the target surface, and drawing options for the
     *Context*, create shapes with functions like :meth:`Context.move_to` and
@@ -14,6 +10,10 @@ class Context(_Context, metaclass=superclass_of(_Context)):
     :meth:`Context.restore` to restore to the saved state.
     '''
 
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.Context(*args, **kwargs)
+
     def __init__(self, target):
         '''   :param target: target :class:`Surface` for the context
            :returns: a newly allocated *Context*
@@ -24,7 +24,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
            constructed with a backend-specific function such as :class:`ImageSurface`
            (or any other cairo backend surface create variant).
         '''
-        self.wrapped = _Context(target)
+        raise NotImplementedError
 
     def append_path(self, path):
         ''':param path: :class:`Path` to be appended
@@ -33,7 +33,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         return value from one of :meth:`Context.copy_path` or
         :meth:`Context.copy_path_flat` or it may be constructed manually (in C).
         '''
-        return self.wrapped.append_path(path)
+        raise NotImplementedError
 
     def arc(self, xc, yc, radius, angle1, angle2):
         ''':param xc: X position of the center of the arc
@@ -82,7 +82,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
           ctx.arc(0., 0., 1., 0., 2 * math.pi)
           ctx.restore()
         '''
-        return self.wrapped.arc(xc, yc, radius, angle1, angle2)
+        raise NotImplementedError
 
     def arc_negative(self, xc, yc, radius, angle1, angle2):
         ''':param xc: X position of the center of the arc
@@ -105,7 +105,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         See :meth:`Context.arc` for more details. This function differs only in
         the direction of the arc between the two angles.
         '''
-        return self.wrapped.arc_negative(xc, yc, radius, angle1, angle2)
+        raise NotImplementedError
 
     def clip(self):
         '''Establishes a new clip region by intersecting the current clip region
@@ -127,7 +127,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         pair. The only other means of increasing the size of the clip region is
         :meth:`Context.reset_clip`.
         '''
-        return self.wrapped.clip()
+        raise NotImplementedError
 
     def clip_extents(self):
         ''':returns: (x1, y1, x2, y2)
@@ -143,7 +143,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.4
         '''
-        return self.wrapped.clip_extents()
+        raise NotImplementedError
 
     def clip_preserve(self):
         '''Establishes a new clip region by intersecting the current clip region
@@ -165,7 +165,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         :meth:`Context.save`/:meth:`Context.restore` pair. The only other means
         of increasing the size of the clip region is :meth:`Context.reset_clip`.
         '''
-        return self.wrapped.clip_preserve()
+        raise NotImplementedError
 
     def close_path(self):
         '''Adds a line segment to the path from the current point to the beginning
@@ -189,7 +189,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         be necessary to save the "last move_to point" during processing as the
         MOVE_TO immediately after the CLOSE_PATH will provide that point.
         '''
-        return self.wrapped.close_path()
+        raise NotImplementedError
 
     def copy_clip_rectangle_list(self):
         ''':returns: the current clip region as a list of rectangles in user
@@ -203,7 +203,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.4
         '''
-        return self.wrapped.copy_clip_rectangle_list()
+        raise NotImplementedError
 
     def copy_page(self):
         """Emits the current page for backends that support multiple pages, but
@@ -214,7 +214,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         This is a convenience function that simply calls
         :meth:`Surface.copy_page` on *Context's* target.
         """
-        return self.wrapped.copy_page()
+        raise NotImplementedError
 
     def copy_path(self):
         ''':returns: :class:`Path`
@@ -223,7 +223,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Creates a copy of the current path and returns it to the user as a
         :class:`Path`.
         '''
-        return self.wrapped.copy_path()
+        raise NotImplementedError
 
     def copy_path_flat(self):
         ''':returns: :class:`Path`
@@ -238,7 +238,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         guaranteed to not have any elements of type CAIRO_PATH_CURVE_TO which
         will instead be replaced by a series of CAIRO_PATH_LINE_TO elements.
         '''
-        return self.wrapped.copy_path_flat()
+        raise NotImplementedError
 
     def curve_to(self, x1, y1, x2, y2, x3, y3):
         ''':param x1: the X coordinate of the first control point
@@ -263,7 +263,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         this function will behave as if preceded by a call to
         ``ctx.move_to(x1, y1)``.
         '''
-        return self.wrapped.curve_to(x1, y1, x2, y2, x3, y3)
+        raise NotImplementedError
 
     def device_to_user(self, x, y):
         ''':param x: X value of coordinate
@@ -277,7 +277,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         the given point by the inverse of the current transformation matrix
         (CTM).
         '''
-        return self.wrapped.device_to_user(x, y)
+        raise NotImplementedError
 
     def device_to_user_distance(self, dx, dy):
         ''':param dx: X component of a distance vector
@@ -292,7 +292,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         translation components of the inverse CTM will be ignored when
         transforming *(dx,dy)*.
         '''
-        return self.wrapped.device_to_user_distance(dx, dy)
+        raise NotImplementedError
 
     def fill(self):
         '''A drawing operator that fills the current path according to the current
@@ -301,7 +301,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         be cleared from the :class:`Context`. See :meth:`Context.set_fill_rule`
         and :meth:`Context.fill_preserve`.
         '''
-        return self.wrapped.fill()
+        raise NotImplementedError
 
     def fill_extents(self):
         ''':returns: (x1, y1, x2, y2)
@@ -330,7 +330,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         See :meth:`Context.fill`, :meth:`Context.set_fill_rule` and
         :meth:`Context.fill_preserve`.
         '''
-        return self.wrapped.fill_extents()
+        raise NotImplementedError
 
     def fill_preserve(self):
         '''A drawing operator that fills the current path according to the current
@@ -340,7 +340,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         See :meth:`Context.set_fill_rule` and :meth:`Context.fill`.
         '''
-        return self.wrapped.fill_preserve()
+        raise NotImplementedError
 
     def font_extents(self):
         ''':returns: (ascent, descent, height, max_x_advance, max_y_advance)
@@ -348,13 +348,13 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         Gets the font extents for the currently selected font.
         '''
-        return self.wrapped.font_extents()
+        raise NotImplementedError
 
     def get_antialias(self):
         ''':returns: the current :ref:`ANTIALIAS <constants_ANTIALIAS>` mode,
           as set by :meth:`Context.set_antialias`.
         '''
-        return self.wrapped.get_antialias()
+        raise NotImplementedError
 
     def get_current_point(self):
         ''':returns: (x, y)
@@ -389,7 +389,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Some functions unset the current path and as a result, current point:
         :meth:`Context.fill`, :meth:`Context.stroke`.
         '''
-        return self.wrapped.get_current_point()
+        raise NotImplementedError
 
     def get_dash(self):
         ''':returns: (dashes, offset)
@@ -402,7 +402,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.4
         '''
-        return self.wrapped.get_dash()
+        raise NotImplementedError
 
     def get_dash_count(self):
         ''':returns: the length of the dash array, or 0 if no dash array set.
@@ -412,25 +412,25 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.4
         '''
-        return self.wrapped.get_dash_count()
+        raise NotImplementedError
 
     def get_fill_rule(self):
         ''':returns: the current :ref:`FILL RULE <constants_FILL_RULE>`, as
           set by :meth:`Context.set_fill_rule`.
         '''
-        return self.wrapped.get_fill_rule()
+        raise NotImplementedError
 
     def get_font_face(self):
         ''':returns: the current :class:`FontFace` for the :class:`Context`.
         '''
-        return self.wrapped.get_font_face()
+        raise NotImplementedError
 
     def get_font_matrix(self):
         ''':returns: the current :class:`Matrix` for the :class:`Context`.
 
         See :meth:`Context.set_font_matrix`.
         '''
-        return self.wrapped.get_font_matrix()
+        raise NotImplementedError
 
     def get_font_options(self):
         ''':returns: the current :class:`FontOptions` for the :class:`Context`.
@@ -440,7 +440,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         include any options derived from the underlying surface; they are
         literally the options passed to :meth:`Context.set_font_options`.
         '''
-        return self.wrapped.get_font_options()
+        raise NotImplementedError
 
     def get_group_target(self):
         ''':returns: the target :class:`Surface`.
@@ -453,19 +453,19 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.2
         '''
-        return self.wrapped.get_group_target()
+        raise NotImplementedError
 
     def get_line_cap(self):
         ''':returns: the current :ref:`LINE_CAP <constants_LINE_CAP>` style, as
           set by :meth:`Context.set_line_cap`.
         '''
-        return self.wrapped.get_line_cap()
+        raise NotImplementedError
 
     def get_line_join(self):
         ''':returns: the current :ref:`LINE_JOIN <constants_LINE_JOIN>` style, as
           set by :meth:`Context.set_line_join`.
         '''
-        return self.wrapped.get_line_join()
+        raise NotImplementedError
 
     def get_line_width(self):
         ''':returns: the current line width
@@ -476,49 +476,49 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         the CTM has changed between the calls to :meth:`Context.set_line_width`
         and :meth:`.get_line_width`.
         '''
-        return self.wrapped.get_line_width()
+        raise NotImplementedError
 
     def get_matrix(self):
         ''':returns: the current transformation :class:`Matrix` (CTM)
         '''
-        return self.wrapped.get_matrix()
+        raise NotImplementedError
 
     def get_miter_limit(self):
         ''':returns: the current miter limit, as set by
           :meth:`Context.set_miter_limit`.
         :rtype: float
         '''
-        return self.wrapped.get_miter_limit()
+        raise NotImplementedError
 
     def get_operator(self):
         ''':returns: the current compositing :ref:`OPERATOR <constants_OPERATOR>`
           for a :class:`Context`.
         '''
-        return self.wrapped.get_operator()
+        raise NotImplementedError
 
     def get_scaled_font(self):
         ''':returns: the current :class:`ScaledFont` for a :class:`Context`.
 
         .. versionadded:: 1.4
         '''
-        return self.wrapped.get_scaled_font()
+        raise NotImplementedError
 
     def get_source(self):
         ''':returns: the current source :class:`Pattern` for  a :class:`Context`.
         '''
-        return self.wrapped.get_source()
+        raise NotImplementedError
 
     def get_target(self):
         ''':returns: the target :class:`Surface` for the :class:`Context`
         '''
-        return self.wrapped.get_target()
+        raise NotImplementedError
 
     def get_tolerance(self):
         ''':returns: the current tolerance value, as set by
           :meth:`Context.set_tolerance`
         :rtype: float
         '''
-        return self.wrapped.get_tolerance()
+        raise NotImplementedError
 
     def glyph_extents(self, glyphs, *args, **kwargs):
         ''':param glyphs: glyphs
@@ -537,7 +537,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Note that whitespace glyphs do not contribute to the size of the
         rectangle (extents.width and extents.height).
         '''
-        return self.wrapped.glyph_extents(glyphs, *args, **kwargs)
+        raise NotImplementedError
 
     def glyph_path(self, glyphs, *args, **kwargs):
         ''':param glyphs: glyphs to show
@@ -549,7 +549,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         if filled, achieves an effect similar to that of
         :meth:`Context.show_glyphs`.
         '''
-        return self.wrapped.glyph_path(glyphs, *args, **kwargs)
+        raise NotImplementedError
 
     def has_current_point(self):
         '''returns: True iff a current point is defined on the current path.
@@ -557,7 +557,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.6
         '''
-        return self.wrapped.has_current_point()
+        raise NotImplementedError
 
     def identity_matrix(self):
         '''Resets the current transformation :class:`Matrix` (CTM) by setting it
@@ -565,7 +565,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         axes will be aligned and one user-space unit will transform to one
         device-space unit.
         '''
-        return self.wrapped.identity_matrix()
+        raise NotImplementedError
 
     def in_clip(self, x, y):
         ''':param x: X coordinate of the point to test
@@ -580,7 +580,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.10.2
         '''
-        return self.wrapped.in_clip(x, y)
+        raise NotImplementedError
 
     def in_fill(self, x, y):
         ''':param x: X coordinate of the point to test
@@ -594,7 +594,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         See :meth:`Context.fill`, :meth:`Context.set_fill_rule` and
         :meth:`Context.fill_preserve`.
         '''
-        return self.wrapped.in_fill(x, y)
+        raise NotImplementedError
 
     def in_stroke(self, x, y):
         ''':param x: X coordinate of the point to test
@@ -611,7 +611,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         :meth:`Context.set_line_join`, :meth:`Context.set_line_cap`,
         :meth:`Context.set_dash`, and :meth:`Context.stroke_preserve`.
         '''
-        return self.wrapped.in_stroke(x, y)
+        raise NotImplementedError
 
     def line_to(self, x, y):
         ''':param x: the X coordinate of the end of the new line
@@ -626,7 +626,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         If there is no current point before the call to :meth:`.line_to`
         this function will behave as ``ctx.move_to(x, y)``.
         '''
-        return self.wrapped.line_to(x, y)
+        raise NotImplementedError
 
     def mask(self, pattern):
         ''':param pattern: a :class:`Pattern`
@@ -635,7 +635,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         channel of *pattern* as a mask. (Opaque areas of *pattern* are painted
         with the source, transparent areas are not painted.)
         '''
-        return self.wrapped.mask(pattern)
+        raise NotImplementedError
 
     def mask_surface(self, surface, x=0.0, y=0.0):
         ''':param surface: a :class:`Surface`
@@ -648,7 +648,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         channel of *surface* as a mask. (Opaque areas of *surface* are painted
         with the source, transparent areas are not painted.)
         '''
-        return self.wrapped.mask_surface(surface, x=0.0, y=0.0)
+        raise NotImplementedError
 
     def move_to(self, x, y):
         ''':param x: the X coordinate of the new position
@@ -659,13 +659,13 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Begin a new sub-path. After this call the current point will be *(x,
         y)*.
         '''
-        return self.wrapped.move_to(x, y)
+        raise NotImplementedError
 
     def new_path(self):
         '''Clears the current path. After this call there will be no path and no
         current point.
         '''
-        return self.wrapped.new_path()
+        raise NotImplementedError
 
     def new_sub_path(self):
         """Begin a new sub-path. Note that the existing path is not affected. After
@@ -681,13 +681,13 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.6
         """
-        return self.wrapped.new_sub_path()
+        raise NotImplementedError
 
     def paint(self):
         '''A drawing operator that paints the current source everywhere within the
         current clip region.
         '''
-        return self.wrapped.paint()
+        raise NotImplementedError
 
     def paint_with_alpha(self, alpha):
         ''':param alpha: alpha value, between 0 (transparent) and 1 (opaque)
@@ -698,7 +698,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         effect is similar to :meth:`Context.paint`, but the drawing is faded out
         using the alpha value.
         '''
-        return self.wrapped.paint_with_alpha(alpha)
+        raise NotImplementedError
 
     def path_extents(self):
         ''':returns: (x1, y1, x2, y2)
@@ -732,7 +732,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.6
         '''
-        return self.wrapped.path_extents()
+        raise NotImplementedError
 
     def pop_group(self):
         ''':returns: a newly created :class:`SurfacePattern` containing the results
@@ -749,7 +749,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.2
         '''
-        return self.wrapped.pop_group()
+        raise NotImplementedError
 
     def pop_group_to_source(self):
         '''Terminates the redirection begun by a call to :meth:`Context.push_group`
@@ -772,7 +772,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.2
         '''
-        return self.wrapped.pop_group_to_source()
+        raise NotImplementedError
 
     def push_group(self):
         '''Temporarily redirects drawing to an intermediate surface known as a
@@ -813,7 +813,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.2
         '''
-        return self.wrapped.push_group()
+        raise NotImplementedError
 
     def push_group_with_content(self, content):
         ''':param content: a :ref:`CONTENT <constants_CONTENT>` indicating the
@@ -832,7 +832,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.2
         '''
-        return self.wrapped.push_group_with_content(content)
+        raise NotImplementedError
 
     def rectangle(self, x, y, width, height):
         ''':param x: the X coordinate of the top left corner of the rectangle
@@ -855,7 +855,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
           ctx.rel_line_to(-width, 0)
           ctx.close_path()
         '''
-        return self.wrapped.rectangle(x, y, width, height)
+        raise NotImplementedError
 
     def rel_curve_to(self, dx1, dy1, dx2, dy2, dx3, dy4):
         ''':param dx1: the X offset to the first control point
@@ -883,7 +883,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         dx3, dy3)`` is logically equivalent to ``ctx.curve_to(x+dx1, y+dy1,
         x+dx2, y+dy2, x+dx3, y+dy3)``.
         '''
-        return self.wrapped.rel_curve_to(dx1, dy1, dx2, dy2, dx3, dy4)
+        raise NotImplementedError
 
     def rel_line_to(self, dx, dy):
         ''':param dx: the X offset to the end of the new line
@@ -900,7 +900,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Given a current point of (x, y), ``ctx.rel_line_to(dx, dy)`` is logically
         equivalent to ``ctx.line_to(x + dx, y + dy)``.
         '''
-        return self.wrapped.rel_line_to(dx, dy)
+        raise NotImplementedError
 
     def rel_move_to(self, dx, dy):
         ''':param dx: the X offset
@@ -915,7 +915,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Given a current point of (x, y), ``ctx.rel_move_to(dx, dy)`` is logically
         equivalent to ``ctx.(x + dx, y + dy)``.
         '''
-        return self.wrapped.rel_move_to(dx, dy)
+        raise NotImplementedError
 
     def reset_clip(self):
         '''Reset the current clip region to its original, unrestricted state. That
@@ -930,13 +930,13 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         :meth:`.clip` as a more robust means of temporarily restricting the clip
         region.
         '''
-        return self.wrapped.reset_clip()
+        raise NotImplementedError
 
     def restore(self):
         '''Restores :class:`Context` to the state saved by a preceding call to
         :meth:`.save` and removes that state from the stack of saved states.
         '''
-        return self.wrapped.restore()
+        raise NotImplementedError
 
     def rotate(self, angle):
         ''':param angle: angle (in radians) by which the user-space axes will be
@@ -949,7 +949,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         for positive angles is from the positive X axis toward the positive Y
         axis.
         '''
-        return self.wrapped.rotate(angle)
+        raise NotImplementedError
 
     def save(self):
         '''Makes a copy of the current state of :class:`Context` and saves it on an
@@ -959,7 +959,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         :meth:`.restore` restores the state from the matching paired
         :meth:`.save`.
         '''
-        return self.wrapped.save()
+        raise NotImplementedError
 
     def scale(self, sx, sy):
         ''':param sx: scale factor for the X dimension
@@ -971,7 +971,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         user-space axes by *sx* and *sy* respectively. The scaling of the axes
         takes place after any existing transformation of user space.
         '''
-        return self.wrapped.scale(sx, sy)
+        raise NotImplementedError
 
     def select_font_face(self, family, *args, **kwargs):
         ''':param family: a font family name
@@ -1017,7 +1017,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         This function is equivalent to a call to :class:`ToyFontFace`
         followed by :meth:`.set_font_face`.
         '''
-        return self.wrapped.select_font_face(family, *args, **kwargs)
+        raise NotImplementedError
 
     def set_antialias(self, antialias):
         ''':param antialias: the new :ref:`ANTIALIAS <constants_ANTIALIAS>` mode
@@ -1030,7 +1030,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Note that this option does not affect text rendering, instead see
         :meth:`FontOptions.set_antialias`.
         '''
-        return self.wrapped.set_antialias(antialias)
+        raise NotImplementedError
 
     def set_dash(self, dashes, *args, **kwargs):
         ''':param dashes: a sequence specifying alternate lengths of on and off
@@ -1063,7 +1063,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         alternating on and off portions of the size specified by the single
         value in *dashes*.
         '''
-        return self.wrapped.set_dash(dashes, *args, **kwargs)
+        raise NotImplementedError
 
     def set_fill_rule(self, fill_rule):
         ''':param fill_rule: a :ref:`FILL RULE <constants_FILL_RULE>` to set the
@@ -1074,7 +1074,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         The default fill rule is :data:`cairo.FILL_RULE_WINDING`.
         '''
-        return self.wrapped.set_fill_rule(fill_rule)
+        raise NotImplementedError
 
     def set_font_face(self, font_face):
         ''':param font_face: a :class:`FontFace`, or None to restore to the
@@ -1083,7 +1083,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Replaces the current :class:`FontFace` object in the :class:`Context`
         with *font_face*.
         '''
-        return self.wrapped.set_font_face(font_face)
+        raise NotImplementedError
 
     def set_font_matrix(self, matrix):
         ''':param matrix: a :class:`Matrix` describing a transform to be applied to
@@ -1095,7 +1095,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         is used (see :meth:`.set_font_size`), but a more complex font matrix can
         be used to shear the font or stretch it unequally along the two axes
         '''
-        return self.wrapped.set_font_matrix(matrix)
+        raise NotImplementedError
 
     def set_font_options(self, options):
         ''':param options: :class:`FontOptions` to use
@@ -1106,7 +1106,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         value (like :data:`cairo.ANTIALIAS_DEFAULT`), then the value from the
         surface is used.
         '''
-        return self.wrapped.set_font_options(options)
+        raise NotImplementedError
 
     def set_font_size(self, size):
         """:param size: the new font size, in user space units
@@ -1122,7 +1122,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         :meth:`.set_font_matrix` nor :meth:`.set_scaled_font`), the default font
         size is 10.0.
         """
-        return self.wrapped.set_font_size(size)
+        raise NotImplementedError
 
     def set_line_cap(self, line_cap):
         ''':param line_cap: a :ref:`LINE_CAP <constants_LINE_CAP>` style
@@ -1136,7 +1136,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         The default line cap style is :data:`cairo.LINE_CAP_BUTT`.
         '''
-        return self.wrapped.set_line_cap(line_cap)
+        raise NotImplementedError
 
     def set_line_join(self, line_join):
         ''':param line_join: a :ref:`LINE_JOIN <constants_LINE_JOIN>` style
@@ -1150,7 +1150,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         The default line join style is :data:`cairo.LINE_JOIN_MITER`.
         '''
-        return self.wrapped.set_line_join(line_join)
+        raise NotImplementedError
 
     def set_line_width(self, width):
         ''':param width: a line width
@@ -1177,7 +1177,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         The default line width value is 2.0.
         '''
-        return self.wrapped.set_line_width(width)
+        raise NotImplementedError
 
     def set_matrix(self, matrix):
         ''':param matrix: a transformation :class:`Matrix` from user space to
@@ -1186,7 +1186,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Modifies the current transformation matrix (CTM) by setting it equal to
         *matrix*.
         '''
-        return self.wrapped.set_matrix(matrix)
+        raise NotImplementedError
 
     def set_miter_limit(self, limit):
         ''':param limit: miter limit to set
@@ -1214,7 +1214,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
           miter limit = 1/math.sin(angle/2)
         '''
-        return self.wrapped.set_miter_limit(limit)
+        raise NotImplementedError
 
     def set_operator(self, op):
         ''':param op: the compositing :ref:`OPERATOR <constants_OPERATOR>` to set
@@ -1222,7 +1222,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         The default operator is :data:`cairo.OPERATOR_OVER`.
         '''
-        return self.wrapped.set_operator(op)
+        raise NotImplementedError
 
     def set_scaled_font(self, scaled_font):
         ''':param scaled_font: a :class:`ScaledFont`
@@ -1235,7 +1235,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
 
         .. versionadded:: 1.2
         '''
-        return self.wrapped.set_scaled_font(scaled_font)
+        raise NotImplementedError
 
     def set_source(self, source):
         """:param source: a :class:`Pattern` to be used as the source for
@@ -1253,7 +1253,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         The default source pattern is a solid pattern that is opaque black,
         (that is, it is equivalent to ``set_source_rgb(0.0, 0.0, 0.0)``.
         """
-        return self.wrapped.set_source(source)
+        raise NotImplementedError
 
     def set_source_rgb(self, red, green, blue):
         ''':param red: red component of color
@@ -1274,7 +1274,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         The default source pattern is opaque black, (that is, it is
         equivalent to ``set_source_rgb(0.0, 0.0, 0.0)``.
         '''
-        return self.wrapped.set_source_rgb(red, green, blue)
+        raise NotImplementedError
 
     def set_source_rgba(self, red, green, blue, *args, **kwargs):
         ''':param red: red component of color
@@ -1297,7 +1297,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         The default source pattern is opaque black, (that is, it is
         equivalent to ``set_source_rgba(0.0, 0.0, 0.0, 1.0)``.
         '''
-        return self.wrapped.set_source_rgba(red, green, blue, *args, **kwargs)
+        raise NotImplementedError
 
     def set_source_surface(self, surface, *args, **kwargs):
         ''':param surface: a :class:`Surface` to be used to set the source pattern
@@ -1323,7 +1323,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         modified if desired, (eg. to create a repeating pattern with
         :meth:`.Pattern.set_extend`).
         '''
-        return self.wrapped.set_source_surface(surface, *args, **kwargs)
+        raise NotImplementedError
 
     def set_tolerance(self, tolerance):
         ''':param tolerance: the tolerance, in device units (typically pixels)
@@ -1339,7 +1339,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         precision of its internal arithmetic, and the prescribed *tolerance* is
         restricted to the smallest representable internal value.
         '''
-        return self.wrapped.set_tolerance(tolerance)
+        raise NotImplementedError
 
     def show_glyphs(self, glyphs, *args, **kwargs):
         ''':param glyphs: glyphs to show
@@ -1352,7 +1352,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         rendered according to the current font face, font size (font matrix),
         and font options.
         '''
-        return self.wrapped.show_glyphs(glyphs, *args, **kwargs)
+        raise NotImplementedError
 
     def show_page(self):
         """Emits and clears the current page for backends that support multiple
@@ -1361,7 +1361,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         This is a convenience function that simply calls
         ``ctx.get_target() . show_page()``
         """
-        return self.wrapped.show_page()
+        raise NotImplementedError
 
     def show_text(self, text):
         ''':param text: text
@@ -1388,7 +1388,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         serious text-using applications. See :meth:`.show_glyphs` for the
         "real" text display API in cairo.
         '''
-        return self.wrapped.show_text(text)
+        raise NotImplementedError
 
     def stroke(self):
         '''A drawing operator that strokes the current path according to the
@@ -1418,7 +1418,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         In no case will a cap style of :data:`cairo.LINE_CAP_BUTT` cause anything
         to be drawn in the case of either degenerate segments or sub-paths.
         '''
-        return self.wrapped.stroke()
+        raise NotImplementedError
 
     def stroke_extents(self):
         ''':returns: (x1, y1, x2, y2)
@@ -1448,7 +1448,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         See :meth:`.stroke`, :meth:`.set_line_width`, :meth:`.set_line_join`,
         :meth:`.set_line_cap`, :meth:`.set_dash`, and :meth:`.stroke_preserve`.
         '''
-        return self.wrapped.stroke_extents()
+        raise NotImplementedError
 
     def stroke_preserve(self):
         '''A drawing operator that strokes the current path according to the
@@ -1459,7 +1459,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         See :meth:`.set_line_width`, :meth:`.set_line_join`,
         :meth:`.set_line_cap`, :meth:`.set_dash`, and :meth:`.stroke_preserve`.
         '''
-        return self.wrapped.stroke_preserve()
+        raise NotImplementedError
 
     def text_extents(self, text):
         ''':param text: text to get extents for
@@ -1480,7 +1480,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         size of the rectangle, though they will affect the x_advance and
         y_advance values.
         '''
-        return self.wrapped.text_extents(text)
+        raise NotImplementedError
 
     def text_path(self, text):
         ''':param text: text
@@ -1505,7 +1505,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         text-using applications. See :meth:`Context.glyph_path` for the "real"
         text path API in cairo.
         '''
-        return self.wrapped.text_path(text)
+        raise NotImplementedError
 
     def transform(self, matrix):
         ''':param matrix: a transformation :class:`Matrix` to be applied to the
@@ -1515,7 +1515,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         an additional transformation. The new transformation of user space takes
         place after any existing transformation.
         '''
-        return self.wrapped.transform(matrix)
+        raise NotImplementedError
 
     def translate(self, tx, ty):
         ''':param tx: amount to translate in the X direction
@@ -1529,7 +1529,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         to :meth:`.translate`. In other words, the translation of the user-space
         origin takes place after any existing transformation.
         '''
-        return self.wrapped.translate(tx, ty)
+        raise NotImplementedError
 
     def user_to_device(self, x, y):
         ''':param x: X value of coordinate
@@ -1545,7 +1545,7 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         Transform a coordinate from user space to device space by multiplying
         the given point by the current transformation matrix (CTM).
         '''
-        return self.wrapped.user_to_device(x, y)
+        raise NotImplementedError
 
     def user_to_device_distance(self, dx, dy):
         ''':param dx: X value of a distance vector
@@ -1563,7 +1563,4 @@ class Context(_Context, metaclass=superclass_of(_Context)):
         translation components of the CTM will be ignored when transforming
         *(dx,dy)*.
         '''
-        return self.wrapped.user_to_device_distance(dx, dy)
-
-    def __getattr__(self, k):
-        return getattr(self.wrapped, k)
+        raise NotImplementedError

@@ -1,15 +1,13 @@
-from cairo import Surface as _Surface
-from .metamagic import superclass_of
-
-
-class Surface(_Surface, metaclass=superclass_of(_Surface)):
-    ''''''
+class Surface():
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.Surface(*args, **kwargs)
 
     def __init__(self):
         '''   *Surface* is the abstract base class from which all the other surface
            classes derive. It cannot be instantiated directly.
         '''
-        self.wrapped = _Surface()
+        raise NotImplementedError
 
     def copy_page(self):
         """Emits the current page for backends that support multiple pages, but
@@ -21,7 +19,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
 
         .. versionadded:: 1.6
         """
-        return self.wrapped.copy_page()
+        raise NotImplementedError
 
     def create_similar(self, content, width, height):
         ''':param content: the :ref:`CONTENT <constants_CONTENT>` for the new
@@ -42,7 +40,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
         Initially the surface contents are all 0 (transparent if contents have
         transparency, black otherwise.)
         '''
-        return self.wrapped.create_similar(content, width, height)
+        raise NotImplementedError
 
     def create_for_rectangle(self, x, y, width, height):
         """:param x: the x-origin of the sub-surface from the top-left of the
@@ -73,7 +71,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
 
         .. versionadded:: 1.10.2
         """
-        return self.wrapped.create_for_rectangle(x, y, width, height)
+        raise NotImplementedError
 
     def finish(self):
         '''This method finishes the *Surface* and drops all references to external
@@ -83,7 +81,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
         Further drawing to the surface will not affect the surface but will
         instead trigger a :exc:`cairo.Error` exception.
         '''
-        return self.wrapped.finish()
+        raise NotImplementedError
 
     def flush(self):
         """Do any pending drawing for the *Surface* and also restore any temporary
@@ -92,7 +90,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
         to drawing on it directly with native APIs. If the *Surface* doesn't
         support direct access, then this function does nothing.
         """
-        return self.wrapped.flush()
+        raise NotImplementedError
 
     def get_content(self):
         ''':returns: The :ref:`CONTENT <constants_CONTENT>` type of *Surface*,
@@ -101,7 +99,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
 
         .. versionadded:: 1.2
         '''
-        return self.wrapped.get_content()
+        raise NotImplementedError
 
     def get_device_offset(self):
         ''':returns: (x_offset, y_offset) a tuple of float
@@ -114,7 +112,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
 
         .. versionadded:: 1.2
         '''
-        return self.wrapped.get_device_offset()
+        raise NotImplementedError
 
     def get_fallback_resolution(self):
         ''':returns: (x_pixels_per_inch, y_pixels_per_inch) a tuple of float
@@ -128,7 +126,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
 
         .. versionadded:: 1.8
         '''
-        return self.wrapped.get_fallback_resolution()
+        raise NotImplementedError
 
     def get_font_options(self):
         ''':returns: a :class:`FontOptions`
@@ -138,14 +136,14 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
         rendering on them, print surfaces to disable hinting of metrics and so
         forth. The result can then be used with :class:`ScaledFont`.
         '''
-        return self.wrapped.get_font_options()
+        raise NotImplementedError
 
     def mark_dirty(self):
         '''Tells cairo that drawing has been done to *Surface* using means other
         than cairo, and that cairo should reread any cached areas. Note that you
         must call :meth:`.flush` before doing such drawing.
         '''
-        return self.wrapped.mark_dirty()
+        raise NotImplementedError
 
     def mark_dirty_rectangle(self, x, y, width, height):
         ''':param x: X coordinate of dirty rectangle
@@ -164,7 +162,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
         Any cached clip set on the *Surface* will be reset by this function, to
         make sure that future cairo calls have the clip set that they expect.
         '''
-        return self.wrapped.mark_dirty_rectangle(x, y, width, height)
+        raise NotImplementedError
 
     def set_device_offset(self, x_offset, y_offset):
         """:param x_offset: the offset in the X direction, in device units
@@ -183,7 +181,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
         Note that the offset affects drawing to the surface as well as using the
         surface in a source pattern.
         """
-        return self.wrapped.set_device_offset(x_offset, y_offset)
+        raise NotImplementedError
 
     def set_fallback_resolution(self, x_pixels_per_inch, y_pixels_per_inch):
         """:param x_pixels_per_inch: horizontal setting for pixels per inch
@@ -217,7 +215,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
 
         .. versionadded:: 1.2
         """
-        return self.wrapped.set_fallback_resolution(x_pixels_per_inch, y_pixels_per_inch)
+        raise NotImplementedError
 
     def show_page(self):
         """Emits and clears the current page for backends that support multiple
@@ -228,7 +226,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
 
         .. versionadded:: 1.6
         """
-        return self.wrapped.show_page()
+        raise NotImplementedError
 
     def write_to_png(self, fobj):
         ''':param fobj: the file to write to
@@ -239,10 +237,7 @@ class Surface(_Surface, metaclass=superclass_of(_Surface)):
 
         Writes the contents of *Surface* to *fobj* as a PNG image.
         '''
-        return self.wrapped.write_to_png(fobj)
-
-    def __getattr__(self, k):
-        return getattr(self.wrapped, k)
+        raise NotImplementedError
 
 
 class ImageSurface(Surface):
@@ -250,6 +245,10 @@ class ImageSurface(Surface):
     allocated by cairo or by the calling code. The supported image formats are
     those defined in :ref:`FORMAT attributes <constants_FORMAT>`.
     '''
+
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.ImageSurface(*args, **kwargs)
 
     def __init__(self, format, width, height):
         '''   :param format: :ref:`FORMAT <constants_FORMAT>` of pixels in the surface to create
@@ -315,42 +314,46 @@ class ImageSurface(Surface):
 
               .. versionadded:: 1.6
         '''
-        super().__init__(format, width, height)
+        raise NotImplementedError
 
     def get_data(self):
         ''':returns: a Python memoryview for the data of the *ImageSurface*, for direct inspection or modification.
 
         .. versionadded:: 1.10.0
         '''
-        return super().get_data()
+        raise NotImplementedError
 
     def get_format(self):
         ''':returns: the :ref:`FORMAT <constants_FORMAT>` of the *ImageSurface*.
 
         .. versionadded:: 1.2
         '''
-        return super().get_format()
+        raise NotImplementedError
 
     def get_height(self):
         ''':returns: the height of the *ImageSurface* in pixels.
         '''
-        return super().get_height()
+        raise NotImplementedError
 
     def get_stride(self):
         ''':returns: the stride of the *ImageSurface* in bytes. The stride is the distance in bytes from the beginning of one row of the image data to the beginning of the next row.
         '''
-        return super().get_stride()
+        raise NotImplementedError
 
     def get_width(self):
         ''':returns: the width of the *ImageSurface* in pixels.
         '''
-        return super().get_width()
+        raise NotImplementedError
 
 
 class PDFSurface(Surface):
     '''The PDFSurface is used to render cairo graphics to Adobe PDF files and is a
     multi-page vector surface backend.
     '''
+
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.PDFSurface(*args, **kwargs)
 
     def __init__(self, fobj, width_in_points, height_in_points):
         """   :param fobj: a filename or writable file object. None may be used to specify no output. This will generate a *PDFSurface* that may be queried and used as a source, without generating a temporary file.
@@ -384,7 +387,7 @@ class PDFSurface(Surface):
 
               .. versionadded:: 1.10.2
         """
-        super().__init__(fobj, width_in_points, height_in_points)
+        raise NotImplementedError
 
     def restrict_to_version(self, version):
         ''':param version: a :ref:`PDF_VERSION <constants_PDF_VERSION>`
@@ -399,7 +402,7 @@ class PDFSurface(Surface):
 
         .. versionadded:: 1.10.2
         '''
-        return super().restrict_to_version(version)
+        raise NotImplementedError
 
     def set_size(self):
         ''':param width_in_points: new surface width, in points
@@ -419,13 +422,17 @@ class PDFSurface(Surface):
 
         .. versionadded:: 1.2
         '''
-        return super().set_size()
+        raise NotImplementedError
 
 
 class PSSurface(Surface):
     '''The *PSSurface* is used to render cairo graphics to Adobe PostScript files and
     is a multi-page vector surface backend.
     '''
+
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.PSSurface(*args, **kwargs)
 
     def __init__(self, fobj, width_in_points, height_in_points):
         '''   :param fobj: a filename or writable file object. None may be used to specify no output. This will generate a *PSSurface* that may be queried and used as a source, without generating a temporary file.
@@ -443,7 +450,7 @@ class PSSurface(Surface):
            Note that the size of individual pages of the PostScript output can
            vary. See :meth:`.set_size`.
         '''
-        super().__init__(fobj, width_in_points, height_in_points)
+        raise NotImplementedError
 
     def dsc_begin_page_setup(self):
         '''This method indicates that subsequent calls to
@@ -458,7 +465,7 @@ class PSSurface(Surface):
 
         .. versionadded:: 1.2
         '''
-        return super().dsc_begin_page_setup()
+        raise NotImplementedError
 
     def dsc_begin_setup(self):
         '''This function indicates that subsequent calls to :meth:`.dsc_comment`
@@ -472,7 +479,7 @@ class PSSurface(Surface):
 
         .. versionadded:: 1.2
         '''
-        return super().dsc_begin_setup()
+        raise NotImplementedError
 
     def dsc_comment(self, comment):
         ''':param comment: a comment string to be emitted into the PostScript output
@@ -559,7 +566,7 @@ class PSSurface(Surface):
 
         .. versionadded:: 1.2
         '''
-        return super().dsc_comment(comment)
+        raise NotImplementedError
 
     def get_eps(self):
         """   :returns: True iff the *PSSurface* will output Encapsulated PostScript.
@@ -583,7 +590,7 @@ class PSSurface(Surface):
 
            .. versionadded:: 1.6
         """
-        return super().get_eps()
+        raise NotImplementedError
 
     def restrict_to_level(self, level):
         ''':param level: a :ref:`PS_LEVEL <constants_PS_LEVEL>`
@@ -598,7 +605,7 @@ class PSSurface(Surface):
 
         .. versionadded:: 1.6
         '''
-        return super().restrict_to_level(level)
+        raise NotImplementedError
 
     def set_eps(self, eps):
         ''':param eps: True to output EPS format PostScript
@@ -614,7 +621,7 @@ class PSSurface(Surface):
 
         .. versionadded:: 1.6
         '''
-        return super().set_eps(eps)
+        raise NotImplementedError
 
     def set_size(self, width_in_points, height_in_points):
         ''':param width_in_points: new surface width, in points (1 point == 1/72.0 inch)
@@ -633,7 +640,7 @@ class PSSurface(Surface):
 
         .. versionadded:: 1.2
         '''
-        return super().set_size(width_in_points, height_in_points)
+        raise NotImplementedError
 
 
 class RecordingSurface(Surface):
@@ -662,6 +669,10 @@ class RecordingSurface(Surface):
     replay.
     '''
 
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.RecordingSurface(*args, **kwargs)
+
     def __init__(self, content, rectangle):
         '''   :param content: the :ref:`CONTENT <constants_CONTENT>` for the new  surface
            :param rectangle: a 4-tuple of float, or None to record unbounded operations.
@@ -678,7 +689,7 @@ class RecordingSurface(Surface):
 
            .. versionadded:: 1.10.2
         '''
-        super().__init__(content, rectangle)
+        raise NotImplementedError
 
     def ink_extents(self):
         '''      :returns: (x0,y0,width,height) a 4-tuple of float
@@ -695,13 +706,17 @@ class RecordingSurface(Surface):
 
               .. versionadded:: 1.10.2
         '''
-        return super().ink_extents()
+        raise NotImplementedError
 
 
 class SVGSurface(Surface):
     '''The *SVGSurface* is used to render cairo graphics to SVG files and is a
     multi-page vector surface backend
     '''
+
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.SVGSurface(*args, **kwargs)
 
     def __init__(self, fobj, width_in_points, height_in_points):
         '''   :param fobj: a filename or writable file object. None may be used to
@@ -715,7 +730,7 @@ class SVGSurface(Surface):
            :returns: a new *SVGSurface* of the specified size in points to be written to *fobj*.
            :raises: *MemoryError* in case of no memory
         '''
-        super().__init__(fobj, width_in_points, height_in_points)
+        raise NotImplementedError
 
     def restrict_to_version(self, version):
         """   :param version: a :ref:`SVG_VERSION <constants_SVG_VERSION>`
@@ -747,13 +762,17 @@ class SVGSurface(Surface):
 
            .. versionadded:: 1.10.2
         """
-        return super().restrict_to_version(version)
+        raise NotImplementedError
 
 
 class Win32Surface(Surface):
     '''The Microsoft Windows surface is used to render cairo graphics to Microsoft
     Windows windows, bitmaps, and printing device contexts.
     '''
+
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.Win32Surface(*args, **kwargs)
 
     def __init__(self, hdc):
         '''   :param hdc: the DC to create a surface for
@@ -765,12 +784,16 @@ class Win32Surface(Surface):
            cairo surface. The resulting surface will always be of format
            cairo.FORMAT_RGB24, see :ref:`FORMAT attributes <constants_FORMAT>`.
         '''
-        super().__init__(hdc)
+        raise NotImplementedError
 
 
 class Win32PrintingSurface(Surface):
     '''The Win32PrintingSurface is a multi-page vector surface type.
     '''
+
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.Win32PrintingSurface(*args, **kwargs)
 
     def __init__(self, hdc):
         '''   :param hdc: the DC to create a surface for
@@ -786,7 +809,7 @@ class Win32PrintingSurface(Surface):
            correct complex rendering behaviour; :meth:`cairo.Surface.show_page` and
            associated methods must be used for correct output.
         '''
-        super().__init__(hdc)
+        raise NotImplementedError
 
 
 class XCBSurface(Surface):
@@ -796,6 +819,10 @@ class XCBSurface(Surface):
     Note that the XCB surface automatically takes advantage of the X render
     extension if it is available.
     '''
+
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.XCBSurface(*args, **kwargs)
 
     def __init__(self):
         '''   :param connection: an XCB connection
@@ -808,7 +835,7 @@ class XCBSurface(Surface):
 
            .. note:: This methods works using xpyb.
         '''
-        super().__init__()
+        raise NotImplementedError
 
     def set_size(self, width, height):
         ''':param width: The width of the surface
@@ -823,7 +850,7 @@ class XCBSurface(Surface):
         A Pixmap can never change size, so it is never necessary to call this
         function on a surface created for a Pixmap.
         '''
-        return super().set_size(width, height)
+        raise NotImplementedError
 
 
 class XlibSurface(Surface):
@@ -834,6 +861,10 @@ class XlibSurface(Surface):
     if it is available.
     '''
 
+    def __new__(cls, *args, **kwargs):
+        import cairo
+        return cairo.XlibSurface(*args, **kwargs)
+
     def __init__(self):
         '''   .. note:: *XlibSurface* cannot be instantiated directly because Python
               interaction with Xlib would require open source Python bindings to Xlib
@@ -841,25 +872,25 @@ class XlibSurface(Surface):
               However, an *XlibSurface* instance can be returned from a function call
               when using pygtk http://www.pygtk.org/.
         '''
-        super().__init__()
+        raise NotImplementedError
 
     def get_depth(self):
         ''':returns: the number of bits used to represent each pixel value.
 
         .. versionadded:: 1.2
         '''
-        return super().get_depth()
+        raise NotImplementedError
 
     def get_height(self):
         ''':returns: the height of the X Drawable underlying the surface in pixels.
 
         .. versionadded:: 1.2
         '''
-        return super().get_height()
+        raise NotImplementedError
 
     def get_width(self):
         ''':returns: the width of the X Drawable underlying the surface in pixels.
 
         .. versionadded:: 1.2
         '''
-        return super().get_width()
+        raise NotImplementedError
