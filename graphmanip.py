@@ -18,12 +18,13 @@ class Node:
     def render(self, context: cairo.Context):
         x, y = context.user_to_device(self.x, self.y)
         context.identity_matrix()
+
         context.translate(x, y)
         context.arc(0, 0, self.r, 0, 2*PI)
-        context.set_source_rgba(1, 0, 0, 1)
+        context.set_source_rgba(0.8, 0.8, 0.8, 1)
         context.fill_preserve()
         context.set_source_rgba(0, 0, 0, 1)
-        context.set_line_width(max(context.device_to_user_distance(1, 1)))
+        context.set_line_width(1)
         context.stroke()
 
         context.select_font_face("Purisa", cairo.FONT_SLANT_NORMAL,
@@ -37,7 +38,7 @@ class Node:
         context.new_path()
 
     def __str__(self):
-        return '<Node %s,%s>' % (self.x, self.y)
+        return self.name
 
 
 class Edge:
@@ -66,8 +67,17 @@ class Edge:
         context.set_font_size(size)
         x_bearing, y_bearing, width, height, x_advance, y_advance = (
             context.text_extents(str(self.w)))
-        context.move_to(self.u.x + (self.v.x - self.u.x) / 2 - x_advance/2,
-                        self.u.y + (self.v.y - self.u.y) / 2 + height/2)
+
+        cx = self.u.x + (self.v.x - self.u.x) / 2
+        cy = self.u.y + (self.v.y - self.u.y) / 2
+        tx = cx - x_advance/2
+        ty = cy + height/2
+        context.rectangle(tx + x_bearing, ty + y_bearing, width, height)
+        context.set_source_rgba(1, 1, 1, 1)
+        context.fill()
+
+        context.move_to(tx, ty)
+        context.set_source_rgba(0, 0, 0, 1)
         context.show_text(str(self.w))
         context.new_path()
 
