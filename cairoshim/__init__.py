@@ -29,15 +29,21 @@ from cairo import (
     SUBPIXEL_ORDER_VRGB, SVG_VERSION_1_1, SVG_VERSION_1_2,
 )
 
-from cairo import (
-    FontFace, FontOptions, Gradient, LinearGradient, Matrix, Pattern,
-    RadialGradient, RectangleInt, Region, ScaledFont, SolidPattern,
-    SurfacePattern, ToyFontFace,
-)
 from cairo import cairo_version, cairo_version_string, version, version_info
 
 from .context import Context
+from .matrix import Matrix
+from .paths import Path
+from .patterns import (
+    Pattern, SolidPattern, SurfacePattern, Gradient, LinearGradient,
+    RadialGradient,
+)
+from .region import Region, RectangleInt
 from .surfaces import (
     Surface, ImageSurface, PDFSurface, PSSurface, RecordingSurface, SVGSurface,
     XCBSurface, XlibSurface,
+)
+from .text import (
+    FontFace, FreeTypeFontFace, ToyFontFace, UserFontFace, ScaledFont,
+    FontOptions,
 )
