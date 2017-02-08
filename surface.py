@@ -4,7 +4,7 @@ from functools import wraps
 import tkinter
 import PIL.Image
 import PIL.ImageTk
-import cairo
+import cairoshim as cairo
 from priolist import PriorityList
 
 
