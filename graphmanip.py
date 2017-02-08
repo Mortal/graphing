@@ -3,7 +3,7 @@ import math
 from math import pi as PI
 import tkinter
 
-import cairo
+import cairoshim as cairo
 from surface import InteractiveSurface, EventType
 
 
@@ -15,7 +15,7 @@ class Node:
         self.x, self.y, self.r = x, y, r
         self.name = name
 
-    def render(self, context):
+    def render(self, context: cairo.Context):
         x, y = context.user_to_device(self.x, self.y)
         context.identity_matrix()
         context.translate(x, y)
@@ -52,7 +52,7 @@ class Edge:
     def endpoint_ids(self):
         return (id(self.u), id(self.v))
 
-    def render(self, context):
+    def render(self, context: cairo.Context):
         context.move_to(self.u.x, self.u.y)
         context.line_to(self.v.x, self.v.y)
         context.set_source_rgba(0, 0, 0, 1)
