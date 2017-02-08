@@ -531,7 +531,7 @@ class Context(_Context, metaclass=ContextMeta):
         '''
         return super().get_tolerance()
 
-    def glyph_extents(self, glyphs, [num_glyphs]):
+    def glyph_extents(self, glyphs, *args, **kwargs):
         ''':param glyphs: glyphs
         :type glyphs: a sequence of (int, float, float)
         :param num_glyphs: number of glyphs to measure, defaults to using all
@@ -548,9 +548,9 @@ class Context(_Context, metaclass=ContextMeta):
         Note that whitespace glyphs do not contribute to the size of the
         rectangle (extents.width and extents.height).
         '''
-        return super().glyph_extents(glyphs, [num_glyphs])
+        return super().glyph_extents(glyphs, *args, **kwargs)
 
-    def glyph_path(self, glyphs[, num_glyphs]):
+    def glyph_path(self, glyphs, *args, **kwargs):
         ''':param glyphs: glyphs to show
         :type glyphs: a sequence of (int, float, float)
         :param num_glyphs: number of glyphs to show, defaults to showing all
@@ -560,7 +560,7 @@ class Context(_Context, metaclass=ContextMeta):
         if filled, achieves an effect similar to that of
         :meth:`Context.show_glyphs`.
         '''
-        return super().glyph_path(glyphs[, num_glyphs])
+        return super().glyph_path(glyphs, *args, **kwargs)
 
     def has_current_point(self):
         '''returns: True iff a current point is defined on the current path.
@@ -984,7 +984,7 @@ class Context(_Context, metaclass=ContextMeta):
         '''
         return super().scale(sx, sy)
 
-    def select_font_face(self, family[, slant[, weight]]):
+    def select_font_face(self, family, *args, **kwargs):
         ''':param family: a font family name
         :type family: str
         :param slant: the :ref:`FONT_SLANT <constants_FONT_SLANT>` of the font,
@@ -1028,7 +1028,7 @@ class Context(_Context, metaclass=ContextMeta):
         This function is equivalent to a call to :class:`ToyFontFace`
         followed by :meth:`.set_font_face`.
         '''
-        return super().select_font_face(family[, slant[, weight]])
+        return super().select_font_face(family, *args, **kwargs)
 
     def set_antialias(self, antialias):
         ''':param antialias: the new :ref:`ANTIALIAS <constants_ANTIALIAS>` mode
@@ -1043,7 +1043,7 @@ class Context(_Context, metaclass=ContextMeta):
         '''
         return super().set_antialias(antialias)
 
-    def set_dash(self, dashes, [offset=0]):
+    def set_dash(self, dashes, *args, **kwargs):
         ''':param dashes: a sequence specifying alternate lengths of on and off
           stroke portions.
         :type dashes: sequence of float
@@ -1074,7 +1074,7 @@ class Context(_Context, metaclass=ContextMeta):
         alternating on and off portions of the size specified by the single
         value in *dashes*.
         '''
-        return super().set_dash(dashes, [offset=0])
+        return super().set_dash(dashes, *args, **kwargs)
 
     def set_fill_rule(self, fill_rule):
         ''':param fill_rule: a :ref:`FILL RULE <constants_FILL_RULE>` to set the
@@ -1287,7 +1287,7 @@ class Context(_Context, metaclass=ContextMeta):
         '''
         return super().set_source_rgb(red, green, blue)
 
-    def set_source_rgba(self, red, green, blue[, alpha=1.0]):
+    def set_source_rgba(self, red, green, blue, *args, **kwargs):
         ''':param red: red component of color
         :type red: float
         :param green: green component of color
@@ -1308,9 +1308,9 @@ class Context(_Context, metaclass=ContextMeta):
         The default source pattern is opaque black, (that is, it is
         equivalent to ``set_source_rgba(0.0, 0.0, 0.0, 1.0)``.
         '''
-        return super().set_source_rgba(red, green, blue[, alpha=1.0])
+        return super().set_source_rgba(red, green, blue, *args, **kwargs)
 
-    def set_source_surface(self, surface[, x=0.0[, y=0.0]]):
+    def set_source_surface(self, surface, *args, **kwargs):
         ''':param surface: a :class:`Surface` to be used to set the source pattern
         :param x: User-space X coordinate for surface origin
         :type x: float
@@ -1334,7 +1334,7 @@ class Context(_Context, metaclass=ContextMeta):
         modified if desired, (eg. to create a repeating pattern with
         :meth:`.Pattern.set_extend`).
         '''
-        return super().set_source_surface(surface[, x=0.0[, y=0.0]])
+        return super().set_source_surface(surface, *args, **kwargs)
 
     def set_tolerance(self, tolerance):
         ''':param tolerance: the tolerance, in device units (typically pixels)
@@ -1352,7 +1352,7 @@ class Context(_Context, metaclass=ContextMeta):
         '''
         return super().set_tolerance(tolerance)
 
-    def show_glyphs(self, glyphs[, num_glyphs]):
+    def show_glyphs(self, glyphs, *args, **kwargs):
         ''':param glyphs: glyphs to show
         :type glyphs: a sequence of (int, float, float)
         :param num_glyphs: number of glyphs to show, defaults to showing all
@@ -1363,7 +1363,7 @@ class Context(_Context, metaclass=ContextMeta):
         rendered according to the current font face, font size (font matrix),
         and font options.
         '''
-        return super().show_glyphs(glyphs[, num_glyphs])
+        return super().show_glyphs(glyphs, *args, **kwargs)
 
     def show_page(self):
         """Emits and clears the current page for backends that support multiple

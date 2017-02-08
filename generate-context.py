@@ -36,10 +36,16 @@ def render_docstring(s, indent):
     return textwrap.indent(rendered, indent)
 
 
+def parse_args(s):
+    def repl(mo):
+        return '%s*args, **kwargs' % (mo.group(1) or ', ')
+    return re.sub(r'(, )?\[.*', repl, s)
+
+
 def get_init_docstring(s):
     mo = re.match(r'^\.\. class:: \w+\((.*)\)\n+', s)
     assert mo
-    args = mo.group(1)
+    args = parse_args(mo.group(1))
 
     mo2 = re.search(r'^\n*() *\.\. method::', s, re.M)
     doc = s[mo.end():mo2.start()]
@@ -81,6 +87,7 @@ def main():
     print(render_docstring(init_doc, 8*' '))
     print('        super().__init__(%s)' % init_args)
     for name, args, doc in get_methods(rest):
+        args = parse_args(args)
         print('')
         print('    def %s(self%s%s):' % (name, args and ', ', args))
         print(render_docstring(doc, 8*' '))
