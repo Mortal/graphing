@@ -30,12 +30,14 @@ from cairo import (
 )
 
 from cairo import (
-    # Context,
-    FontFace, FontOptions, Gradient, ImageSurface, LinearGradient, Matrix,
-    PDFSurface, PSSurface, Pattern, RadialGradient, RecordingSurface,
-    RectangleInt, Region, SVGSurface, ScaledFont, SolidPattern, Surface,
-    SurfacePattern, ToyFontFace, XCBSurface, XlibSurface,
+    FontFace, FontOptions, Gradient, LinearGradient, Matrix, Pattern,
+    RadialGradient, RectangleInt, Region, ScaledFont, SolidPattern,
+    SurfacePattern, ToyFontFace,
 )
 from cairo import cairo_version, cairo_version_string, version, version_info
 
 from .context import Context
+from .surfaces import (
+    Surface, ImageSurface, PDFSurface, PSSurface, RecordingSurface, SVGSurface,
+    XCBSurface, XlibSurface,
+)
