@@ -221,7 +221,7 @@ class InteractiveSurface(tkinter.Tk):
 
         self.event_handler = {
             (EventType.ButtonPress, 4): self.on_scroll_up,
-            (EventType.ButtonRelease, 5): self.on_scroll_down,
+            (EventType.ButtonPress, 5): self.on_scroll_down,
         }
 
     def on_configure(self, ev: tkinter.Event):
